@@ -258,7 +258,7 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 .logorail .wordmark{opacity:1}
 @keyframes railmove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-.deco{position:relative;margin:0 -20px;padding:26px 16px;
+.deco{position:relative;margin:0 -20px;padding:24px 8px;
   background-color:#0A0906;
   background-image:
     repeating-linear-gradient(45deg,transparent 0 13px,rgba(201,162,39,.42) 13px 15px),
@@ -267,7 +267,7 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
     repeating-linear-gradient(-45deg,transparent 0 27px,rgba(230,196,106,.22) 27px 30px);}
 .deco::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(120% 70% at 50% 45%,rgba(0,0,0,.55) 0%,rgba(0,0,0,.86) 62%,rgba(0,0,0,.94) 100%)}
-.invite{position:relative;z-index:1;background:#0B0B0C;border:2px solid #C9A227;padding:34px 22px 26px;text-align:center}
+.invite{position:relative;z-index:1;background:#0B0B0C;border:2px solid #C9A227;padding:32px 18px 24px;text-align:center}
 .invite::before{content:"";position:absolute;inset:6px;border:1px solid rgba(201,162,39,.55);pointer-events:none}
 
 .inv-logo{width:172px;height:40px;margin:0 auto;
@@ -287,7 +287,7 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
   letter-spacing:.22em;text-indent:.22em;color:#C9A227;text-transform:uppercase}
 .inv-code{margin:7px 0 0;font-size:10.5px;letter-spacing:.18em;color:var(--ink-3)}
 .inv-code b{color:#D8B75A;font-weight:700}
-.inv-transfer{margin:18px 0 0;font-family:"Cormorant Garamond",serif;font-size:12px;letter-spacing:.14em;color:var(--ink-3)}
+.inv-transfer{margin:14px 0 0;font-family:"Cormorant Garamond",serif;font-size:12px;letter-spacing:.14em;color:var(--ink-3)}
 
 .infotog{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);
   border-radius:var(--radius-s);padding:15px 17px;font:inherit;font-size:14.5px;font-weight:500;color:var(--ink);cursor:pointer;text-align:left}
@@ -603,7 +603,6 @@ function intro(){
         <p class="inv-body">${esc(honor())}의 공간에 가장 잘 맞는 작품을 정확히 골라 드리기 위해, 큐레이터가 미리 여쭙는 열두 가지입니다.</p>
         <div class="inv-rule"></div>
         <p class="inv-meta">Twelve Questions · Two Minutes</p>
-        <p class="inv-code">전용 코드 <b class="mono">${esc(INV.c||"—")}</b></p>
         <p class="inv-transfer">타인에게 양도하지 마세요.</p>
       </div>
     </div>
