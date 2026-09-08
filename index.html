@@ -258,7 +258,7 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 .logorail .wordmark{opacity:1}
 @keyframes railmove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-.deco{position:relative;margin:0 -20px;padding:24px 8px;
+.deco{position:relative;margin:0 -20px;padding:26px clamp(18px,9vw,46px);
   background-color:#0A0906;
   background-image:
     repeating-linear-gradient(45deg,transparent 0 13px,rgba(201,162,39,.42) 13px 15px),
@@ -267,19 +267,19 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
     repeating-linear-gradient(-45deg,transparent 0 27px,rgba(230,196,106,.22) 27px 30px);}
 .deco::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(120% 70% at 50% 45%,rgba(0,0,0,.55) 0%,rgba(0,0,0,.86) 62%,rgba(0,0,0,.94) 100%)}
-.invite{position:relative;z-index:1;background:#0B0B0C;border:2px solid #C9A227;padding:32px 18px 24px;text-align:center}
+.invite{position:relative;z-index:1;background:#0B0B0C;border:2px solid #C9A227;padding:30px 16px 22px;text-align:center}
 .invite::before{content:"";position:absolute;inset:6px;border:1px solid rgba(201,162,39,.55);pointer-events:none}
 
-.inv-logo{width:172px;height:40px;margin:0 auto;
+.inv-logo{width:152px;height:36px;margin:0 auto;
   background:linear-gradient(180deg,#F6E7BC 0%,#D8B75A 46%,#9C7C22 100%)}
 .inv-rule{height:1px;margin:20px auto 0;width:70%;
   background:linear-gradient(90deg,transparent,rgba(201,162,39,.75),transparent)}
 .inv-eyebrow{margin:20px 0 0;font-family:"Cormorant Garamond",serif;font-size:13px;font-weight:500;
   letter-spacing:.34em;text-indent:.34em;color:#D8B75A;text-transform:uppercase}
-.inv-vip{display:block;width:min(60%,204px);height:auto;margin:14px auto 4px}
+.inv-vip{display:block;width:min(66%,186px);height:auto;margin:14px auto 4px}
 .inv-hello{margin:6px 0 0;font-size:19px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
 .inv-hello em{font-style:normal;color:#E3C46B;border:0;background:none}
-.inv-body{margin:14px auto 0;max-width:21em;font-size:13.5px;line-height:1.9;color:var(--ink-2)}
+.inv-body{margin:14px auto 0;max-width:18em;font-size:13.5px;line-height:1.9;color:var(--ink-2)}
 .inv-meta{margin:22px 0 0;font-family:"Cormorant Garamond",serif;font-size:12.5px;font-weight:500;
   letter-spacing:.22em;text-indent:.22em;color:#C9A227;text-transform:uppercase}
 .inv-code{margin:7px 0 0;font-size:10.5px;letter-spacing:.18em;color:var(--ink-3)}
