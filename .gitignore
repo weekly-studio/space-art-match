@@ -1,1 +1,6 @@
-.DS_Store
+# 배포에 필요한 건 index.html 하나뿐이다.
+# 로고·포스터 원본은 index.html 안에 이미 박혀 있으므로 공개 리포에 올리지 않는다.
+*
+!.gitignore
+!README.md
+!index.html
