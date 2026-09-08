@@ -233,11 +233,15 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* ===== VIP 웹패스 ===== */
-.roster{overflow:hidden;margin:0 -20px 20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0;
-  -webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
-.roster .track{display:flex;gap:28px;width:max-content;animation:mq 42s linear infinite}
-.roster span{font-size:11px;letter-spacing:.18em;color:var(--ink-3);white-space:nowrap;font-weight:500}
-@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.crest{display:flex;flex-direction:column;align-items:center;gap:9px;margin:0 -20px 22px;padding:14px 20px 16px;border-bottom:1px solid var(--line)}
+.crestgroup{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+.crestlab{font-size:9.5px;letter-spacing:.24em;color:var(--ink-3);font-weight:700}
+.wordmark{font-size:13px;letter-spacing:.1em;color:var(--accent-ink);font-weight:700;white-space:nowrap}
+.wordmark.host{font-size:15px;letter-spacing:.14em}
+.crestgroup .wordmark:not(.host){font-size:12px;color:var(--ink-2);font-weight:500;letter-spacing:.06em}
+.wordmark.img{height:20px;width:auto;display:block}
+.wordmark.img.host{height:26px}
+.crest .dot{width:3px;height:3px;border-radius:50%;background:var(--line-strong);display:inline-block}
 .hello{margin:0 0 6px;font-size:26px;line-height:1.4;font-weight:700;letter-spacing:-.02em}
 .hello em{font-style:normal;color:var(--accent-ink);border:0;background:none}
 .hellosub{margin:0 0 20px;font-size:13.5px;color:var(--ink-2);line-height:1.7}
@@ -254,12 +258,35 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 .vipword{margin:0;font-size:62px;line-height:.9;font-weight:700;letter-spacing:-.045em;
   background:linear-gradient(180deg,#F6E7BC 0%,#DCBB55 46%,#9C7C22 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .transfer{margin:10px 0 0;font-size:12.5px;color:var(--ink-3)}
-.qrbox{width:188px;height:188px;margin:24px auto 0;background:#fff;border-radius:14px;padding:11px;display:grid;place-items:center}
-.qrbox svg{width:100%;height:100%;display:block}
-.qrfall{font-size:15px;font-weight:700;letter-spacing:.14em;color:#0B0B0C;text-align:center;line-height:1.6}
-.passwho{margin:18px 0 0;font-size:13px;color:var(--ink-2)}
-.passwho b{color:var(--accent-ink);font-weight:700}
-.qrnote{margin:11px 0 20px;font-size:11.5px;color:var(--ink-3);text-align:center;line-height:1.6}
+.seal-emblem{position:relative;width:112px;height:112px;margin:26px auto 0;display:grid;place-items:center}
+.seal-emblem .rosette{position:absolute;inset:0;border-radius:50%;
+  background:
+    repeating-conic-gradient(from 0deg,rgba(201,162,39,.30) 0deg 3deg,transparent 3deg 6deg),
+    radial-gradient(circle at 36% 30%,#F2DFA8 0%,#C9A227 42%,#7E6318 100%);
+  box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.45)}
+.seal-emblem .seal-ring{position:absolute;inset:13px;border-radius:50%;border:1px solid rgba(20,16,6,.42);
+  box-shadow:inset 0 0 0 4px rgba(255,255,255,.10),inset 0 0 12px rgba(60,44,10,.45)}
+.passname{margin:20px 0 0;font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.passcode{margin:5px 0 22px;font-size:11px;letter-spacing:.12em;color:var(--ink-3)}
+.passcode b{color:var(--accent);font-weight:700}
+
+/* 오프라인 전시 초대장 */
+.expo{margin-top:26px;background:linear-gradient(168deg,#16130D 0%,#0C0C0D 62%,#121116 100%);
+  border:1px solid var(--gold);border-radius:18px;overflow:hidden}
+.expo-top{padding:22px 20px 16px;text-align:center;border-bottom:1px solid var(--gold-faint)}
+.expo-lead{margin:10px 0 0;font-size:17px;line-height:1.5;font-weight:700;color:var(--ink)}
+.expo-poster{background:#0A0A0B}
+.expo-poster img{width:100%;display:block}
+.poster-none{aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--ink-3)}
+.poster-none span{font-size:12.5px;letter-spacing:.14em}
+.poster-none small{font-size:11px;color:var(--line-strong)}
+.expo-body{padding:6px 20px 18px}
+.expo-title{margin:16px 0 10px;font-size:21px;line-height:1.4;font-weight:700;color:var(--accent-ink);letter-spacing:-.01em}
+.expo-body .inforow{padding:11px 0}
+.expo-note{margin:14px 0 0;font-size:12px;color:var(--ink-3);line-height:1.6}
+.expo-foot{padding:2px 20px 16px}
+.expo-foot .crest{margin:0;padding:14px 0 0;border-bottom:0;border-top:1px solid var(--gold-faint)}
 
 .infotog{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);
   border-radius:var(--radius-s);padding:15px 17px;font:inherit;font-size:14.5px;font-weight:500;color:var(--ink);cursor:pointer;text-align:left}
@@ -446,6 +473,33 @@ async function sendToSheet(kind,data){
   }
 }
 
+/* ================= 주최 · 협찬 · 오프라인 전시 =================
+   로고 파일을 받으면 LOGO 에 data URI 를 넣어 워드마크를 이미지로 바꾼다. */
+const HOST = { name:"카네기리재단", logo:"" };
+const SPONSORS = [ {name:"세계아트미술관", logo:""}, {name:"DB증권", logo:""} ];
+
+const EXPO = {
+  on:      true,
+  title:   "〈전시명 미정〉",
+  period:  "〈기간 미정〉",
+  venue:   "〈장소 미정〉",
+  hours:   "〈관람시간 미정〉",
+  guests:  "동반 1인",
+  note:    "입구에서 이 초대장 화면을 보여주시면 됩니다.",
+  poster:  ""
+};
+
+function markHTML(o,cls){
+  return o.logo ? `<img class="wordmark img ${cls||""}" src="${o.logo}" alt="${esc(o.name)}">`
+                : `<span class="wordmark ${cls||""}">${esc(o.name)}</span>`;
+}
+function crestRow(){
+  return `<div class="crest">
+    <div class="crestgroup"><span class="crestlab">주최</span>${markHTML(HOST,"host")}</div>
+    <div class="crestgroup"><span class="crestlab">협찬</span>${SPONSORS.map(s=>markHTML(s)).join('<i class="dot"></i>')}</div>
+  </div>`;
+}
+
 /* ================= 초대장 · VIP 개인 링크 ================= */
 const TITLES=["대표님","원장님","관장님","사장님","선생님","여사님","님"];
 function b64e(o){const b=new TextEncoder().encode(JSON.stringify(o));let s="";b.forEach(c=>s+=String.fromCharCode(c));
@@ -516,29 +570,28 @@ function render(){
   return done();
 }
 function intro(){
-  const names=rosterNames(), roster=names.concat(names).map(n=>`<span>${esc(n)}</span>`).join("");
-  const svg=qrSVG(location.href);
   app.innerHTML=bar()+`<section class="intro pass-intro">
-    <div class="roster"><div class="track">${roster}</div></div>
+    ${crestRow()}
     <h1 class="hello">안녕하세요,<br><em>${esc(honor())}</em></h1>
-    <p class="hellosub">통화에서 들려주신 공간 이야기를 바탕으로 준비했습니다. 아래는 ${esc(honor())}께만 발급된 초대장입니다.</p>
+    <p class="hellosub">통화에서 들려주신 공간 이야기를 바탕으로 준비했습니다.<br>아래는 ${esc(honor())}께만 발급된 초대장입니다.</p>
     <div class="pass">
-      <div class="stub"><b>SPACE · ART MATCH</b><span>PRIVATE</span></div>
+      <div class="stub"><b>${esc(HOST.name)}</b><span>PRIVATE</span></div>
       <div class="perf"></div>
       <div class="pbody">
         <p class="vipword">VIP</p>
         <p class="transfer">타인에게 양도하지 마세요.</p>
-        <div class="qrbox">${svg||`<div class="qrfall">${esc(INV.c||"")}</div>`}</div>
-        <p class="passwho"><b>${esc(honor())}</b><br>큐레이터 선별 5점 · 공간 3D 배치</p>
+        <div class="seal-emblem" aria-hidden="true"><span class="rosette"></span><span class="seal-ring"></span></div>
+        <p class="passname">${esc(honor())}</p>
+        <p class="passcode">전용 코드 <b class="mono">${esc(INV.c||"—")}</b></p>
       </div>
     </div>
-    <p class="qrnote">QR을 스캔하면 다른 기기에서도 이 초대장이 그대로 열립니다.</p>
     <button class="infotog" id="itog" aria-expanded="false" aria-controls="icard">초대 정보 열기<span class="chev">⌃</span></button>
     <div class="infocard" id="icard" hidden>
       <dl class="inforow"><dt>성함</dt><dd>${esc(honor())}</dd></dl>
       ${INV.p?`<dl class="inforow"><dt>휴대폰</dt><dd class="mono">${esc(INV.p)}</dd></dl>`:""}
       <dl class="inforow"><dt>초대일</dt><dd>${fmtDate(INV.d)}</dd></dl>
-      <dl class="inforow"><dt>초대처</dt><dd>${INV.by?esc(INV.by)+" 큐레이터":"Space · Art Match"}</dd></dl>
+      <dl class="inforow"><dt>초대처</dt><dd>${esc(HOST.name)}</dd></dl>
+      ${INV.by?`<dl class="inforow"><dt>담당</dt><dd>${esc(INV.by)} 큐레이터</dd></dl>`:""}
       <dl class="inforow"><dt>전용 코드</dt><dd class="code mono">${esc(INV.c||"—")}</dd></dl>
       <dl class="inforow"><dt>구성</dt><dd>12문항 · 공간 사진 3장 · 약 2분</dd></dl>
     </div>
@@ -657,11 +710,34 @@ async function submit(){
   step=Q.length+2; render(); scrollTo(0,0);
 }
 function done(){
+  const artists=rosterNames().slice(0,10).join(" · ");
   app.innerHTML=pvbar()+`<section class="finish">
     <div class="seal">✓</div>
     <h1>${esc(honor())},<br>진단이 접수되었습니다.</h1>
-    <p class="lede">답변해 주신 공간 조건과 사진, 조형 취향을 큐레이터가 직접 검토합니다. 보유 작품 중 당신의 벽에 실제로 맞는 5점을 골라, 작품 이미지와 3D 배치 시뮬레이션을 카카오톡으로 보내드립니다.</p>
-    <dl class="meta"><div><dt>다음 단계</dt><dd>큐레이터 검토</dd></div><div><dt>발송</dt><dd>영업일 기준 1~2일 내 카카오톡</dd></div><div><dt>내용</dt><dd>추천 작품 5점 · 공간 3D 배치</dd></div></dl>
+    <p class="lede">답변해 주신 공간 조건과 사진, 조형 취향을 큐레이터가 직접 검토합니다. 보유 작품 중 ${esc(honor())}의 벽에 실제로 맞는 5점을 골라, 작품 이미지와 3D 배치 시뮬레이션을 카카오톡으로 보내드립니다.</p>
+    <dl class="meta">
+      <div><dt>다음 단계</dt><dd>큐레이터 검토</dd></div>
+      <div><dt>발송</dt><dd>영업일 기준 1~2일 내 카카오톡</dd></div>
+      <div><dt>내용</dt><dd>추천 작품 5점 · 공간 3D 배치</dd></div>
+    </dl>
+    ${EXPO.on?`
+    <div class="expo">
+      <div class="expo-top">
+        <span class="vipmark">Exhibition Invitation</span>
+        <p class="expo-lead">${esc(honor())}을<br>전시 개막에 초대합니다.</p>
+      </div>
+      <div class="expo-poster">${EXPO.poster?`<img src="${EXPO.poster}" alt="${esc(EXPO.title)} 포스터">`:`<div class="poster-none"><span>전시 포스터</span><small>이미지 준비 중</small></div>`}</div>
+      <div class="expo-body">
+        <h2 class="expo-title">${esc(EXPO.title)}</h2>
+        <dl class="inforow"><dt>기간</dt><dd>${esc(EXPO.period)}</dd></dl>
+        <dl class="inforow"><dt>장소</dt><dd>${esc(EXPO.venue)}</dd></dl>
+        <dl class="inforow"><dt>관람</dt><dd>${esc(EXPO.hours)}</dd></dl>
+        <dl class="inforow"><dt>입장</dt><dd>${esc(honor())} · ${esc(EXPO.guests)}</dd></dl>
+        ${artists?`<dl class="inforow"><dt>출품</dt><dd>${esc(artists)} 외</dd></dl>`:""}
+        <p class="expo-note">${esc(EXPO.note)}</p>
+      </div>
+      <div class="expo-foot">${crestRow()}</div>
+    </div>`:""}
     <p class="note">추가로 전하고 싶은 내용이 있으시면 안내 문자에 회신해 주세요.</p>
   </section>`;
 }
@@ -899,7 +975,7 @@ async function adminView(){
 function inviteDone(v){return v.status==="done"||ROWS.some(r=>r.inviteCode&&r.inviteCode===v.code)}
 function inviteMsg(v){
   const h=v.name+" "+(v.title||"님");
-  return `안녕하세요 ${h}, ${v.by?v.by+" ":""}큐레이터입니다.\n\n통화에서 들려주신 공간에 맞춰 ${h}만을 위한 공간 진단을 준비했습니다. 아래는 ${h}께만 발급된 전용 링크입니다. (문항 12개 · 약 2분)\n\n${inviteURL(v)}\n\n답변 주시면 보유 작품 중 ${h}의 벽에 실제로 맞는 5점을 직접 골라, 공간 사진 위에 실제 크기로 앉힌 3D 배치 시뮬레이션과 함께 보내드리겠습니다.`;
+  return `안녕하세요 ${h}, ${HOST.name} ${v.by?v.by+" ":""}큐레이터입니다.\n\n통화에서 들려주신 공간에 맞춰 ${h}만을 위한 공간 진단을 준비했습니다. 아래는 ${h}께만 발급된 전용 링크입니다. (문항 12개 · 약 2분)\n\n${inviteURL(v)}\n\n답변 주시면 보유 작품 중 ${h}의 벽에 실제로 맞는 5점을 직접 골라, 공간 사진 위에 실제 크기로 앉힌 3D 배치 시뮬레이션과 함께 보내드리겠습니다.`;
 }
 function inviteRow(v){
   const done=inviteDone(v);
