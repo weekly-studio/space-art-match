@@ -457,7 +457,9 @@ function readInvite(){const m=(location.hash||"").match(/[#&]v=([A-Za-z0-9\-_]+)
 let INV=readInvite(), PREVIEW=false, ADMIN=false;
 function lsGet(k){try{return localStorage.getItem(k)||""}catch(e){return ""}}
 function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
-function baseURL(){const b=lsGet("am_base").trim(); return (b||location.href).split("#")[0];}
+/* 이 페이지가 올라가 있는 주소. 발급 링크와 QR 이 이 주소로 만들어진다. */
+const SITE_URL = "https://weekly-studio.github.io/space-art-match/";
+function baseURL(){const b=lsGet("am_base").trim(); return (b||SITE_URL||location.href).split("#")[0];}
 function openInvitePreview(v){
   INV={n:v.name,t:v.title,p:v.phone||"",c:v.code,d:v.at,by:v.by||""};
   PREVIEW=true; ADMIN=false; step=-1; ans={}; photos=[]; render(); scrollTo(0,0);
@@ -922,7 +924,7 @@ function inviteSection(){
     <label class="f"><span>연락처 (선택 · 마지막 폼에 미리 채워집니다)</span><input id="i-phone" inputmode="numeric" placeholder="010-0000-0000"></label>
     <label class="f"><span>상담 메모 (선택 · 큐레이터만 봅니다)</span><input id="i-memo" placeholder="예) 신사동 사옥 로비 / 예산 500 전후"></label>
     <label class="f"><span>담당 큐레이터</span><input id="i-by" value="${esc(by)}" placeholder="이름"></label>
-    <label class="f"><span>배포 주소 — 고객에게 보낼 링크의 기본 주소</span><input id="i-base" value="${esc(lsGet("am_base"))}" placeholder="${esc(location.href.split("#")[0])}"></label>
+    <label class="f"><span>배포 주소 — 고객에게 보낼 링크의 기본 주소</span><input id="i-base" value="${esc(lsGet("am_base"))}" placeholder="${esc(SITE_URL)}"></label>
     <div id="i-err" class="err" hidden></div>
     <button class="btn small" id="i-make">초대 링크 만들기</button>
   </div>
