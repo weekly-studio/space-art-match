@@ -529,7 +529,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260909-144439";
+const BUILD = "20260909-150749";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -632,7 +632,7 @@ let INV=readInvite(), PREVIEW=false, ADMIN=false;
 function lsGet(k){try{return localStorage.getItem(k)||""}catch(e){return ""}}
 function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 /* 이 페이지가 올라가 있는 주소. 발급 링크와 QR 이 이 주소로 만들어진다. */
-const SITE_URL = "https://weekly-studio.github.io/space-art-match/";
+const SITE_URL = "https://private-art-collection.netlify.app/";
 async function checkGuest(name,tail){
   if(!sheetOn()) return {ok:false,reason:"unset"};
   try{
