@@ -148,6 +148,14 @@ textarea{resize:vertical;min-height:76px}
 .kv dt{color:var(--ink-3);font-size:12px;min-width:104px;flex:none;padding-top:1px;font-weight:500}
 .kv dd{margin:0;flex:1}
 .gate{display:flex;flex-direction:column;gap:12px;padding:60px 0}
+.rules{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-s);padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+.rules label{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12.5px;color:var(--ink-2)}
+.rules label>span{flex:none;color:var(--ink-3);font-size:12px}
+.rules select{width:auto;min-width:9.5em;padding:7px 9px;font-size:12.5px}
+.rules label.chk{justify-content:flex-start;gap:9px}
+.rules label.chk input{width:auto;flex:none;margin:0}
+.rules label.chk span{color:var(--ink-2);font-size:12.5px}
+.ruleact{display:flex;justify-content:flex-end;padding-top:2px}
 
 /* 관리자 사진 */
 .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
@@ -962,7 +970,12 @@ const SLOT=["정답 — 유형과 벽에 가장 맞는 한 점","진입 — 같�
 const SLOT_SHORT=["정답","진입","한 단계 위","인접","스토리"];
 
 function idx(r,q){const qq=Q.find(x=>x.id===q); const t=(r.answers||{})[q]; const i=qq?qq.opts.findIndex(o=>o.t===t):-1; return i<0?1:i;}
+const RULE_DEF={tierMax:null,toneAdj:0,formAdj:0,densAdj:0,noPaper:false,excludeShown:true};
+function rulesOf(r){return {...RULE_DEF,...(r.rules||{})};}
+const clamp100=v=>Math.max(0,Math.min(100,v));
+
 function recommend(r){
+  const rl=rulesOf(r);
   const ax=r.axis||{tone:50,form:50,density:50};
   let T=ax.tone,F=ax.form,D=ax.density;
   const pa=r.photoAnalysis||{};
@@ -976,9 +989,17 @@ function recommend(r){
   if(light===2){T=Math.min(100,T+15);notes.push("자연광이 거의 없어 채도를 한 단계 올려 봤습니다.");}
   if(room===3){T=Math.max(0,T-20);notes.push("실내에 이미 색·패턴이 많아 채도를 낮춰 잡았습니다.");}
   const [lo,hi]=WALL_BAND[wall];
-  const scored=WORKS.map(x=>{
+  T=clamp100(T+rl.toneAdj); F=clamp100(F+rl.formAdj); D=clamp100(D+rl.densAdj);
+  if(rl.toneAdj) notes.push(`채도를 손으로 ${rl.toneAdj>0?"+":""}${rl.toneAdj} 옮겼습니다.`);
+  if(rl.formAdj) notes.push(`형상을 ${rl.formAdj>0?"추상":"구상"} 쪽으로 옮겼습니다.`);
+  if(rl.densAdj) notes.push(`밀도를 ${rl.densAdj>0?"충만":"여백"} 쪽으로 옮겼습니다.`);
+  const tierMax=rl.tierMax==null?budget+2:rl.tierMax;
+  const shown=new Set(rl.excludeShown?(r.shown||[]):[]);
+  const build=useShown=>WORKS.map(x=>{
     if(x.nude&&!(place===3&&wall===3)) return null;
-    if(x.tier>budget+2) return null;
+    if(x.tier>tierMax) return null;
+    if(rl.noPaper&&x.paper) return null;
+    if(useShown&&shown.has(x.img)) return null;
     let s=Math.hypot(x.tone-T,(x.form-F)*1.1,x.dens-D);
     const mx=Math.max(x.w,x.h);
     if(mx<lo) s+=14+(lo-mx)*0.15;
@@ -992,12 +1013,14 @@ function recommend(r){
     if(x.tier>budget+1) s+=12;
     return {x,s};
   }).filter(Boolean).sort((a,b)=>a.s-b.s);
+  let scored=build(true);
+  if(scored.length<5){ scored=build(false); if(shown.size) notes.push("남은 작품이 적어 이미 보낸 작품도 다시 포함했습니다."); }
   const picked=[],used=new Set();
   const take=(pred,slot)=>{const c=scored.find(o=>!used.has(o.x)&&pred(o)); if(c){used.add(c.x);picked.push({...c,slot});return c;} return null;};
-  const top=take(o=>o.x.tier<=budget+1,0)||take(()=>true,0);
+  const top=take(o=>o.x.tier<=Math.min(tierMax,budget+1),0)||take(()=>true,0);
   const topTier=top?top.x.tier:1;
   take(o=>o.x.tier<topTier&&o.x.a!==top?.x.a,1)||take(o=>o.x.a!==top?.x.a,1);
-  take(o=>o.x.tier===Math.min(4,budget+2)||(o.x.tier>topTier&&o.x.tier<=budget+1),2)||take(()=>true,2);
+  take(o=>o.x.tier===Math.min(tierMax,budget+2)||(o.x.tier>topTier&&o.x.tier<=tierMax),2)||take(()=>true,2);
   const rk=[T>50?1:0,F>50?1:0,D>50?1:0]; const amb=[Math.abs(T-50),Math.abs(F-50),Math.abs(D-50)];
   const flip=amb.indexOf(Math.min(...amb)); const adj=[...rk]; adj[flip]=1-adj[flip];
   take(o=>o.x.key===adj.join("-"),3)||take(()=>true,3);
@@ -1179,6 +1202,21 @@ function resultText(r,R){
   ps.push(`<p><span class="lab">추천 기준</span>${esc(MOTIVE_TXT[r.motive]||"")} 5점은 정답 1점, 부담 없는 진입 1점, 한 단계 위 1점, 취향 확인용 인접 1점, 작가 이야기 1점으로 구성했습니다.</p>`);
   return ps.join("");
 }
+function rulesHTML(r){
+  const rl=rulesOf(r), n=(r.shown||[]).length;
+  const sel=(id,val,opts)=>`<select class="rule" data-k="${id}">${opts.map(([v,t])=>
+    `<option value="${v}"${String(v)===String(val)?" selected":""}>${t}</option>`).join("")}</select>`;
+  return `<div class="rules">
+    <label><span>예산 상한</span>${sel("tierMax",rl.tierMax==null?"":rl.tierMax,
+      [["","응답 그대로"],[1,"● 가장 낮은 가격대까지"],[2,"●● 까지"],[3,"●●● 까지"],[4,"●●●● 전부"]])}</label>
+    <label><span>채도</span>${sel("toneAdj",rl.toneAdj,[[-20,"많이 낮춤"],[-10,"낮춤"],[0,"자동"],[10,"올림"],[20,"많이 올림"]])}</label>
+    <label><span>형상</span>${sel("formAdj",rl.formAdj,[[-20,"구상 쪽"],[-10,"약간 구상"],[0,"자동"],[10,"약간 추상"],[20,"추상 쪽"]])}</label>
+    <label><span>밀도</span>${sel("densAdj",rl.densAdj,[[-20,"여백 쪽"],[-10,"약간 여백"],[0,"자동"],[10,"약간 충만"],[20,"충만 쪽"]])}</label>
+    <label class="chk"><input type="checkbox" class="rule" data-k="noPaper" ${rl.noPaper?"checked":""}><span>종이 작품 빼기 (직사광·습기 우려)</span></label>
+    <label class="chk"><input type="checkbox" class="rule" data-k="excludeShown" ${rl.excludeShown?"checked":""}><span>이미 보낸 작품 빼기${n?` · 지금까지 ${n}점`:""}</span></label>
+    <div class="ruleact"><button class="plink rreset">기준·이력 초기화</button></div>
+  </div>`;
+}
 function recHTML(p,i,r){
   const im=WIMG[p.x.img];
   return `<div class="rec">${im?`<img src="${im}" alt="">`:`<div class="noimg">이미지 없음</div>`}
@@ -1198,8 +1236,9 @@ function bodyHTML(r){
     <div class="result"><p class="rtype">${esc(r.type||"")}</p><p class="tdesc">${esc((TYPES[r.typeKey]||{}).d||"")}</p>
       <div class="axes">${axisBar("채도","무채",R.T,"원색")}${axisBar("형상","구상",ax.form,"추상")}${axisBar("밀도","여백",ax.density,"충만")}</div>
       <div class="rtext">${resultText(r,R)}</div></div>
+    <div class="sect">추천 기준</div>${rulesHTML(r)}
     <div class="sect">추천 5점</div><div class="recs">${R.picked.map((p,i)=>recHTML(p,i,r)).join("")}</div>
-    <div class="tools tight"><button class="btn small rerun">다시 추천하기</button><button class="btn ghost small pdf" ${DL?"":"disabled"}>PDF 만들기</button></div>
+    <div class="tools tight"><button class="btn small rerun">기준대로 다시 추천</button><button class="btn ghost small pdf" ${DL?"":"disabled"}>PDF 만들기</button></div>
     <p class="prog" id="prog_${r.id}"></p>
     <div class="sect">응답 원문</div>${kv("연락처",esc(r.phone))}${Q.map(q=>kv(q.tag,esc(a[q.id]||"—"))).join("")}${r.memo?kv("메모",esc(r.memo)):""}
     <p id="msg_${r.id}" class="note"></p>`;
@@ -1248,15 +1287,33 @@ function bindBody(r){
     try{await DB.doc("photos/"+p.id).delete();PHOTOS[r.id]=ph.filter(q=>q.i!==i);r.photoCount=PHOTOS[r.id].length;await saveResp(r);rerender(r);say(r,"사진을 삭제했습니다.");}
     catch(err){say(r,"삭제 실패: "+(err.message||err),true)}
   });
+  const readRules=()=>{
+    const rl={...rulesOf(r)};
+    b.querySelectorAll(".rule").forEach(el=>{
+      const k=el.dataset.k;
+      if(el.type==="checkbox") rl[k]=el.checked;
+      else if(k==="tierMax")   rl[k]=el.value===""?null:+el.value;
+      else                     rl[k]=+el.value;
+    });
+    return rl;
+  };
+  const rst=b.querySelector(".rreset");
+  if(rst) rst.onclick=async()=>{ r.rules=null; r.shown=[]; await saveResp(r); rerender(r); say(r,"기준과 추천 이력을 지웠습니다."); };
   b.querySelector(".rerun").onclick=async()=>{
     const btn=b.querySelector(".rerun"); btn.disabled=true;
     try{
+      // 지금 보이는 5점을 이력에 넣은 뒤 다시 고른다
+      const before=recommend(r).picked.map(p=>p.x.img);
+      r.rules=readRules();
+      if(r.rules.excludeShown) r.shown=[...new Set([...(r.shown||[]),...before])];
       const cur=PHOTOS[r.id]||[];
       if(SAMPLE&&IMGOK&&cur.length){
         prog(r,"1/2 사진을 분석하고 있습니다… (10~40초)"); await analyzePhotos(r);
         prog(r,"2/2 사진 기준으로 작품별 코멘트를 쓰고 있습니다…"); await aiComments(r);
       }
-      await saveResp(r); rerender(r); say(r,cur.length&&SAMPLE&&IMGOK?"사진을 다시 분석하고 5점을 다시 골랐습니다.":"5점을 다시 골랐습니다.");
+      await saveResp(r); rerender(r);
+      const R2=recommend(r), fresh=R2.picked.filter(p=>!before.includes(p.x.img)).length;
+      say(r, `기준대로 5점을 다시 골랐습니다. 새로 들어온 작품 ${fresh}점.`);
     }catch(e){btn.disabled=false;prog(r,"");say(r,"실패: "+(e.code||"")+" "+(e.message||e),true);}
   };
   b.querySelector(".pdf").onclick=()=>makePDF(r,b.querySelector(".pdf"));
@@ -1326,7 +1383,7 @@ app.addEventListener("click",e=>{
   else if(t.id==="gcur"){ADMIN=true;adminView();scrollTo(0,0);}
 });
 if(isAdmin()) adminView();
-else if(INV||(INV=readRemembered())){ if(/[#&]done\b/.test(location.hash||"")) step=Q.length+2; render(); }
-else gateInvite();
+else if(INV && /[#&]done\b/.test(location.hash||"")){ step=Q.length+2; render(); }
+else gateInvite();   // 초대 링크로 와도 성함으로 한 번 더 확인한다
 addEventListener("hashchange",()=>location.reload());
 </script>
