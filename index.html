@@ -262,6 +262,12 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 .pg.cover .ax .t{background:#2B2721}
 .pg.cover .ax .d{background:#C9A227;border-color:#0B0B0C}
 .pg.cover .photos img{background:#151412}
+.pg .coverbody{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-bottom:60px}
+.pg .coverlogo{width:230px;height:auto;display:block;margin-bottom:34px}
+.pg .coverrule{width:120px;height:1px;background:linear-gradient(90deg,transparent,#C9A227,transparent);margin-bottom:30px}
+.pg .covereyebrow{margin:0 0 22px;font-size:13px;letter-spacing:.42em;text-indent:.42em;color:#C9A227;text-transform:uppercase;font-weight:700}
+.pg.cover h1{font-size:40px;line-height:1.35;margin:0}
+.pg .coversub{margin:26px 0 0;font-size:14px;letter-spacing:.06em;color:#B4AC9C}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* ===== VIP 웹패스 ===== */
@@ -1463,14 +1469,15 @@ function pdfPages(r){
   const R=recommend(r),ph=PHOTOS[r.id]||[],t=TYPES[r.typeKey]||{},ax=r.axis||{},pa=r.photoAnalysis;
   const date=new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric"});
   const axis=(n,l,v,rr,c)=>`<div class="ax"><b style="color:${c||"#24211C"}">${n}</b><div class="t"><div class="d" style="left:${Math.max(0,Math.min(100,+v||50))}%"></div></div><div class="lr"><span>${l}</span><span>${rr}</span></div></div>`;
-  const cover=`<div class="pg cover"><div class="head"><span>Space · Art Match · Private</span><span>${date}</span></div>
-    <h1>${esc(respHonor(r))}의 공간을 위한<br><em>${esc(r.type)}</em> 큐레이션</h1>
-    <p class="sub">${esc(t.d||"")}. 답변해 주신 12문항과 공간 사진을 바탕으로 담당자가 5점을 골랐습니다.</p>
-    ${ph.length?`<div class="photos">${ph.map(p=>`<img src="${p.data}">`).join("")}</div>`:""}
-    <div class="box"><div class="lab">취향 진단</div><p>${esc(t.long||"")}</p>
-      <div class="axes3">${axis("채도","무채",R.T,"원색")}${axis("형상","구상",ax.form,"추상")}${axis("밀도","여백",ax.density,"충만")}</div></div>
-    ${pa?`<div class="box"><div class="lab">사진에서 본 공간</div><p>${esc([pa.wall,pa.light,pa.style].filter(Boolean).join(" "))}</p><p>${esc([pa.wallWidth,pa.placement].filter(Boolean).join(" "))}</p></div>`:""}
-    <div class="box"><div class="lab">추천 기준</div><p>${esc(MOTIVE_TXT[r.motive]||"")} 5점은 가장 맞는 한 점, 부담 없는 진입 한 점, 한 단계 위 한 점, 취향 확인용 한 점, 작가 이야기 한 점으로 구성했습니다.</p></div>
+  const cover=`<div class="pg cover">
+    <div class="head"><span>Space · Art Match · Private</span><span>${date}</span></div>
+    <div class="coverbody">
+      ${HOST.logo?`<img class="coverlogo" src="${HOST.logo}">`:""}
+      <div class="coverrule"></div>
+      <p class="covereyebrow">Private Art Consultation</p>
+      <h1>${esc(respHonor(r))}의 공간을 위한<br><em>${esc(r.type)}</em></h1>
+      <p class="coversub">추천 작품 5점 · 공간 3D 배치 시뮬레이션</p>
+    </div>
     <div class="foot"><span>담당자 선별 · 실제 공간 3D 배치 시뮬레이션은 별도 발송</span><span>1</span></div></div>`;
   const works=R.picked.map((p,i)=>{const im=WIMG[p.x.img];const ai=r.aiReasons&&r.aiReasons[p.x.t];
     return `<div class="pg"><div class="head"><span>추천 ${i+1} / 5 · ${SLOT_SHORT[p.slot]}</span><span>${esc(respHonor(r))}</span></div>
