@@ -539,7 +539,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260909-151528";
+const BUILD = "20260909-154941";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -560,7 +560,7 @@ const BUILD = "20260909-151528";
    설치법은 같은 폴더의 "구글시트_AppsScript.gs" 파일 맨 위에 있습니다.
    ※ 이 파일을 자체 도메인(넷리파이·깃허브 페이지·회사 서버 등)에 올렸을 때만
      동작합니다. Claude 아티팩트 안에서는 외부 전송이 차단됩니다.        */
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbxzkNp6BuZRlNTEa1Hfzi9fxAPVU8cGTqBdp9UwhYlKT1W_hbs92q5B35lP9KiH-5Md/exec";
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbwIwx1N13UgI6SEbmGxZh5MnQioUbjCA-QmDIMszuqrxk_m31hvMSPDGfX1IJQqrIPV/exec";
 
 function sheetOn(){ return /^https:\/\/script\.google\.com\//.test(SHEET_URL); }
 async function sendToSheet(kind,data){
