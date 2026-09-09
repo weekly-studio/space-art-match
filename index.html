@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>공간 작품 매칭 초대장</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -253,27 +255,28 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 
 /* ===== 아르데코 초대장 ===== */
 .logorail{position:relative;overflow:hidden;margin:0 0 14px;padding:11px 0;border-top:1px solid rgba(201,162,39,.28);border-bottom:1px solid rgba(201,162,39,.28)}
-.logorail .track{display:flex;align-items:center;gap:30px;width:max-content;animation:railmove 24s linear infinite}
+.logorail .track{display:flex;align-items:center;gap:34px;width:max-content;animation:railmove 24s linear infinite}
 .logorail img{display:block;opacity:1;width:auto;flex:none}
 .logorail .wordmark{opacity:1}
 @keyframes railmove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 .deco-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background-color:#0A0A0B;background-position:center;background-size:100% 100%;background-repeat:no-repeat}
+  background-color:#0A0A0B;background-position:center;background-size:cover;background-repeat:no-repeat}
+@media (min-aspect-ratio:62/100){ .deco-bg{background-size:100% 100%} }
 .deco{position:relative;margin:0;padding:0}
-.invite{position:relative;z-index:1;background:#080809;padding:22px 10px 18px;text-align:center}
+.invite{position:relative;z-index:1;background:transparent;padding:16px 4px 10px;text-align:center}
 
 
-.inv-logo{width:132px;height:32px;margin:0 auto;
+.inv-logo{width:min(46%,158px);height:38px;margin:0 auto;
   background:linear-gradient(180deg,#F6E7BC 0%,#D8B75A 46%,#9C7C22 100%)}
 .inv-rule{height:1px;margin:20px auto 0;width:70%;
   background:linear-gradient(90deg,transparent,rgba(201,162,39,.75),transparent)}
 .inv-eyebrow{margin:16px 0 0;font-family:"Cormorant Garamond",serif;font-size:12px;font-weight:500;
   letter-spacing:.34em;text-indent:.34em;color:#D8B75A;text-transform:uppercase}
-.inv-vip{display:block;width:min(74%,168px);height:auto;margin:12px auto 2px}
-.inv-hello{margin:6px 0 0;font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.inv-vip{display:block;width:min(58%,188px);height:auto;margin:14px auto 2px}
+.inv-hello{margin:7px 0 0;font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
 .inv-hello em{font-style:normal;color:#E3C46B;border:0;background:none}
-.inv-body{margin:12px auto 0;max-width:17em;font-size:13px;line-height:1.85;color:var(--ink-2)}
+.inv-body{margin:13px auto 0;max-width:19em;font-size:13.5px;line-height:1.9;color:var(--ink-2)}
 .inv-meta{margin:18px 0 0;font-family:"Cormorant Garamond",serif;font-size:11px;font-weight:500;
   letter-spacing:.16em;text-indent:.16em;color:#C9A227;text-transform:uppercase}
 .inv-code{margin:7px 0 0;font-size:10.5px;letter-spacing:.18em;color:var(--ink-3)}
@@ -297,7 +300,14 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 .qrdlg p{margin:12px 0 0;text-align:center;font-size:13px;color:#24211C;font-weight:700}
 .pvbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px -20px 0;padding:9px 20px;background:var(--accent-soft);border-top:1px solid var(--gold);border-bottom:1px solid var(--gold);font-size:11.5px;color:var(--accent-ink);letter-spacing:.04em}
 .pvbar .plink{color:var(--accent-ink);font-weight:700;font-size:11.5px}
-.intro.pass-intro{gap:0;justify-content:flex-start;padding:clamp(10px,11vh,80px) clamp(6px,18vw,170px) 40px}
+.intro.pass-intro{gap:0;justify-content:flex-start;
+  padding:clamp(64px,15vh,120px) max(0px,calc(7.5vw - 20px)) 44px}
+@media (min-aspect-ratio:50/100) and (max-aspect-ratio:62/100){
+  .intro.pass-intro{padding:clamp(70px,16vh,130px) max(0px,calc(15.5vw - 20px)) 44px}
+}
+@media (min-aspect-ratio:62/100){
+  .intro.pass-intro{padding:15vh max(0px,calc(21vw - 20px)) 10vh}
+}
 .pass-intro .btn{margin-top:24px}
 .pass-intro .infotog{margin-top:10px}
 .pass-intro .crest{margin-top:26px;border-bottom:0;border-top:1px solid var(--line);padding-top:18px}
