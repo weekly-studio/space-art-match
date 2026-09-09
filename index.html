@@ -540,7 +540,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260909-162244";
+const BUILD = "20260909-163109";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -694,6 +694,13 @@ async function askSheet(body){
       body:JSON.stringify(body)});
     return await res.json();
   }catch(e){ return null; }
+}
+async function writeSheet(kind,payload){
+  const j=await askSheet({kind,code:adminCode(),...payload});
+  if(!j)            return {ok:false,error:"시트에 연결하지 못했습니다."};
+  if(j.wrote!==true) return {ok:false,error:j.error
+    ||"시트에 반영하지 못했습니다. Apps Script 코드를 최신으로 배포해 주세요."};
+  return {ok:true};
 }
 async function fetchResponses(){
   const j=await askSheet({kind:"responses",code:adminCode()});
@@ -1357,7 +1364,15 @@ function inviteRow(v){
     <div class="rtop"><span class="rname">${esc(v.name)} ${esc(v.title||"님")}</span><span class="chip ${done?"ok":"warn"}">${done?"컨설팅 완료":"발송 대기"}</span>${v.fromSheet?`<span class="chip">시트 기록</span>`:""}</div>
     <div class="invmeta mono">${esc((v.at||"").slice(0,10))} · ${v.phone?esc(v.phone):(v.fromSheet?"연락처는 시트에":"연락처 없음")} · 코드 ${esc(v.code)}${v.by?" · 담당 "+esc(v.by):""}</div>
     ${v.memo?`<div class="invmemo">${esc(v.memo)}</div>`:""}
-    <div class="invact"><button class="btn ghost small ilink">링크 복사</button><button class="btn ghost small imsg">카톡 문구 복사</button><button class="plink iqr">QR</button><button class="plink iopen">미리보기</button><button class="plink idone">마지막 화면</button><button class="plink idel">삭제</button></div>
+    ${v._edit?`<div class="editform">
+      <div class="irow"><label class="f"><span>성함</span><input class="ive" data-k="name" value="${esc(v.name||"")}"></label>
+      <label class="f"><span>호칭</span><select class="ive" data-k="title">${TITLES.map(t=>`<option${t===(v.title||"님")?" selected":""}>${t}</option>`).join("")}</select></label></div>
+      <label class="f"><span>연락처</span><input class="ive" data-k="phone" value="${esc(v.phone||"")}"></label>
+      <label class="f"><span>담당자</span><input class="ive" data-k="by" value="${esc(v.by||"")}"></label>
+      <label class="f"><span>상담 메모</span><input class="ive" data-k="memo" value="${esc(v.memo||"")}"></label>
+      <div class="tools tight"><button class="btn small isave">저장</button><button class="btn ghost small icancel">취소</button></div>
+    </div>`:""}
+    <div class="invact"><button class="btn ghost small ilink">링크 복사</button><button class="btn ghost small imsg">카톡 문구 복사</button><button class="plink iedit">수정</button><button class="plink iqr">QR</button><button class="plink iopen">미리보기</button><button class="plink idone">마지막 화면</button><button class="plink idel">삭제</button></div>
   </div>`;
 }
 function inviteSection(){
@@ -1424,13 +1439,28 @@ function bindInvites(){
     };
     el.querySelector(".iopen").onclick=()=>openInvitePreview(v);
     el.querySelector(".idone").onclick=()=>openDonePreview(v);
+    el.querySelector(".iedit").onclick=()=>{ v._edit=!v._edit; paintInvites(); };
+    if(v._edit){
+      const val=k=>el.querySelector(`.ive[data-k="${k}"]`).value.trim();
+      el.querySelector(".isave").onclick=async()=>{
+        const p={code:v.code,name:val("name"),title:val("title"),phone:val("phone"),by:val("by"),memo:val("memo")};
+        const r=await writeSheet("invite.update",p);
+        if(!r.ok) return alert(r.error);
+        Object.assign(v,p); v._edit=false;
+        try{await DB.doc("invites/"+v.code).update(p);}catch(_){}
+        lsSet("am_inv_cache",""); paintInvites();
+      };
+      el.querySelector(".icancel").onclick=()=>{ v._edit=false; paintInvites(); };
+      bindPhone(el.querySelector('.ive[data-k="phone"]'));
+    }
     el.querySelector(".idel").onclick=async()=>{
-      if(!confirm(v.name+" "+(v.title||"님")+" 초대를 이 화면에서 지울까요?\n구글 시트의 발급 기록은 그대로 남고, 그 성함으로는 계속 들어올 수 있습니다."))
+      if(!confirm(v.name+" "+(v.title||"님")+" 초대를 지울까요?\n구글 시트의 발급 기록도 함께 지워지고, 그 성함으로는 들어올 수 없게 됩니다."))
         return;
+      const r=await writeSheet("invite.delete",{code:v.code});
+      if(!r.ok) return alert(r.error);
       try{await DB.doc("invites/"+v.code).delete();}catch(_){}
       INVITES=INVITES.filter(x=>x.code!==v.code);
-      document.getElementById("invlist").innerHTML=INVITES.map(inviteRow).join("")||`<p class="note">아직 발급한 초대 링크가 없습니다.</p>`;
-      bindInvites();
+      lsSet("am_inv_cache",""); paintInvites();
     };
   });
 }
@@ -1439,7 +1469,7 @@ function summaryHTML(r){
   const no=ROWS.indexOf(r)+1;
   return `<summary><div class="rtop"><span class="rname"><i class="rno mono">${no||"-"}</i>${esc(r.name)}${title?" "+esc(title):""}</span>
     <span class="rtop-r"><span class="rtime mono">${(r.at||"").slice(0,16).replace("T"," ")}</span>
-      <span class="ract">${r.fromSheet?`<span class="rsrc">시트</span>`:`<button class="plink redit">수정</button><button class="plink rdel">삭제</button>`}</span></span></div>
+      <span class="ract"><button class="plink redit">수정</button><button class="plink rdel">삭제</button></span></span></div>
     ${by?`<div class="chips"><span class="chip">담당 ${esc(by)}</span></div>`:""}</summary>`;
 }
 function resultText(r,R){
@@ -1487,14 +1517,14 @@ function bodyHTML(r){
   const cells=[0,1,2].map(i=>{const p=ph.find(q=>q.i===i);
     return `<div class="pcell">${p?`<img src="${p.data}" alt="공간 사진 ${i+1}">`:`<div class="pnone">사진 ${i+1}<br>없음</div>`}
       <div class="pact"><label class="plink">${p?"교체":"추가"}<input type="file" accept="image/*" data-i="${i}" hidden></label>${p?`<button class="plink pdelete" data-i="${i}">삭제</button>`:""}${p&&p.by==="curator"?`<span class="pby">담당자</span>`:""}</div></div>`;}).join("");
-  return `${r._edit&&!r.fromSheet?`<div class="sect">응답 수정</div>
+  return `${r._edit?`<div class="sect">응답 수정</div>
     <div class="editform">
       <label class="f"><span>성함</span><input class="ef" data-k="name" value="${esc(r.name||"")}"></label>
       <label class="f"><span>호칭</span><select class="ef" data-k="title">${TITLES.map(t=>`<option${t===((r.invite&&r.invite.title)||"님")?" selected":""}>${t}</option>`).join("")}</select></label>
       <label class="f"><span>연락처</span><input class="ef" data-k="phone" value="${esc(r.phone||"")}"></label>
       <label class="f"><span>담당자</span><input class="ef" data-k="by" value="${esc((r.invite&&r.invite.by)||"")}"></label>
       <label class="f"><span>메모</span><textarea class="ef" data-k="memo">${esc(r.memo||"")}</textarea></label>
-      <p class="note">여기서 고친 내용은 이 화면에만 반영됩니다. 구글 시트의 원본 행은 그대로 남습니다.</p>
+      <p class="note">${r.fromSheet?"저장하면 구글 시트의 원본 행도 함께 바뀝니다.":"이 브라우저에 저장된 응답을 고칩니다."}</p>
       <div class="tools tight"><button class="btn small esave">저장</button><button class="btn ghost small ecancel">취소</button></div>
     </div>`:""}
     <div class="sect">공간 사진</div><div class="pgrid">${cells}</div>`+bodyRest(r);
@@ -1549,14 +1579,18 @@ function bindRow(r){
     document.getElementById("b_"+r.id).innerHTML=bodyHTML(r); bindBody(r); };
   if(dl) dl.onclick=async e=>{
     stop(e);
-    if(!confirm(`${r.name} 응답을 삭제할까요? 사진까지 함께 지워지며 되돌릴 수 없습니다.`)) return;
+    if(!confirm(`${r.name} 응답을 삭제할까요? 되돌릴 수 없습니다.`+(r.fromSheet?"\n구글 시트의 행도 함께 지워집니다.":""))) return;
+    if(r.fromSheet){
+      const res=await writeSheet("response.delete",{id:r.id,at:r.at});
+      if(!res.ok) return alert(res.error);
+    }
     try{
       for(const p of (PHOTOS[r.id]||[])) await DB.doc("photos/"+p.id).delete();
       await DB.doc("responses/"+r.id).delete();
-      delete PHOTOS[r.id];
-      ROWS=ROWS.filter(x=>x!==r);
-      adminResponses("");
-    }catch(err){ alert("삭제하지 못했습니다: "+(err.message||err)); }
+    }catch(err){}
+    delete PHOTOS[r.id];
+    ROWS=ROWS.filter(x=>x!==r);
+    adminResponses("");
   };
 }
 function bindBody(r){
@@ -1566,11 +1600,15 @@ function bindBody(r){
   if(cn) cn.onclick=()=>{ r._edit=false; b.innerHTML=bodyHTML(r); bindBody(r); };
   if(sv) sv.onclick=async()=>{
     const v={}; b.querySelectorAll(".ef").forEach(el=>v[el.dataset.k]=el.value.trim());
+    if(r.fromSheet){
+      const res=await writeSheet("response.update",{id:r.id,at:r.at,name:v.name,title:v.title,phone:v.phone,by:v.by,memo:v.memo});
+      if(!res.ok){ say(r,res.error,true); return; }
+    }
     r.name=v.name||r.name; r.phone=v.phone; r.memo=v.memo;
     r.invite={...(r.invite||{}), name:r.name, title:v.title, by:v.by};
     r._edit=false;
-    try{ await saveResp(r); rerender(r); say(r,"수정했습니다."); }
-    catch(e){ say(r,"저장 실패: "+(e.message||e),true); }
+    try{ if(!r.fromSheet) await saveResp(r); }catch(e){}
+    rerender(r); say(r,"수정했습니다."+(r.fromSheet?" 시트에도 반영했습니다.":""));
   };
   const ph=PHOTOS[r.id]||[];
   b.querySelectorAll(".pcell img").forEach(img=>img.onclick=()=>{const d=document.getElementById("lightbox");d.querySelector("img").src=img.src;d.showModal();});

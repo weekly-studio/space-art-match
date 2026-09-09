@@ -1,7 +1,7 @@
 #!/bin/zsh
 # 배포: 빌드 번호를 새로 찍고 version.txt 와 함께 올린다
 set -e
-SRC=~/Desktop/공간작품매칭테스트.html
+SRC=~/Desktop/공간진단_배포/공간작품매칭테스트.html
 REPO=~/Desktop/공간진단_배포
 MSG="${1:-업데이트}"
 BUILD=$(date +%Y%m%d-%H%M%S)
