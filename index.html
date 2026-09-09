@@ -522,6 +522,23 @@ const TYPES = {
 const MOTIVE_LABEL={emotion:"감정 우선",story:"서사 우선",asset:"자산 우선",fit:"조화 우선"};
 const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설명보다 화면 자체의 힘이 있는 작품을 앞에 두었습니다.",story:"작가의 삶과 이야기를 중시하셔서, 서사가 강한 작가의 작품을 우선했습니다.",asset:"소장 가치를 중시하셔서, 근현대 거장과 블루칩 작가를 우선했습니다.",fit:"공간과의 조화를 중시하셔서, 실내 톤과 벽 조건에 가장 잘 붙는 작품을 우선했습니다."};
 
+/* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
+   배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
+const BUILD = "20260909-143822";
+(async()=>{
+  try{
+    if(!/^https?:/.test(location.protocol)) return;
+    if(sessionStorage.getItem("am_reloaded")===BUILD) return;
+    const res=await fetch("version.txt?ts="+Date.now(),{cache:"no-store"});
+    if(!res.ok) return;
+    const live=(await res.text()).trim();
+    if(live && live!==BUILD){
+      sessionStorage.setItem("am_reloaded",BUILD);
+      location.replace(location.pathname+"?v="+encodeURIComponent(live)+location.hash);
+    }
+  }catch(e){}
+})();
+
 /* ================= 구글 시트 연동 =================
    Apps Script 웹 앱 URL 을 아래 따옴표 안에 붙여넣으면
    고객 응답과 발급한 초대가 구글 시트로 쌓입니다.
@@ -619,7 +636,7 @@ async function checkGuest(name,tail){
     return await res.json();
   }catch(e){ return {ok:false,reason:"net"}; }
 }
-function baseURL(){const b=lsGet("am_base").trim(); return (b||SITE_URL||location.href).split("#")[0];}
+function baseURL(){const b=lsGet("am_base").trim(); return (b||SITE_URL||location.href).split("#")[0].split("?")[0];}
 function openInvitePreview(v){
   INV={n:v.name,t:v.title,p:v.phone||"",c:v.code,d:v.at,by:v.by||""};
   PREVIEW=true; ADMIN=false; step=-1; ans={}; photos=[]; render(); scrollTo(0,0);
