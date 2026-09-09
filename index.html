@@ -540,7 +540,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260909-161808";
+const BUILD = "20260909-162027";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -876,10 +876,8 @@ function gateInvite(){
     if(!name) return fail("성함을 입력해 주세요.");
     err.hidden=true; btn.disabled=true; btn.textContent="확인 중…";
     const r=await checkGuest(name,"");
-    if(!(r&&r.ok)){                      // 담당자 접속 코드인지도 확인해 본다
-      const a=await askSheet({kind:"auth",code:name});
-      if(a&&a.auth===true){ try{sessionStorage.setItem("am_code",name)}catch(e){}
-        ADMIN=true; adminView(); scrollTo(0,0); return; }
+    if(!(r&&r.ok) && await tryAdminLogin(name)){   // 담당자 접속 코드인지도 본다
+      ADMIN=true; adminView(); scrollTo(0,0); return;
     }
     if(r&&r.ok){
       INV={n:r.name,t:r.title||"님",p:r.phone||"",c:r.code||"",d:r.at||"",by:r.by||""};
@@ -1027,7 +1025,17 @@ function done(){
 }
 
 /* ================= 큐레이터 ================= */
-function adminCode(){ try{return sessionStorage.getItem("am_code")||""}catch(e){return ""} }
+/* 예비 접속 코드. 서버에 코드가 올라가기 전에도 담당자가 들어갈 수 있게 남겨 둔다.
+   서버 쪽 ACCESS_CODE 를 길게 바꾼 뒤에는 이 값을 지워도 된다. */
+const FALLBACK_CODE = "1440";
+function adminCode(){ try{return sessionStorage.getItem("am_code")||FALLBACK_CODE}catch(e){return FALLBACK_CODE} }
+async function tryAdminLogin(v){
+  if(!v) return false;
+  if(v===FALLBACK_CODE){ try{sessionStorage.setItem("am_code",v)}catch(e){} return true; }
+  const a=await askSheet({kind:"auth",code:v});
+  if(a&&a.auth===true){ try{sessionStorage.setItem("am_code",v)}catch(e){} return true; }
+  return false;
+}
 const WORKS=[
  {img:"sa01",a:"겸재 정선",t:"진경산수 화첩 12폭",w:45,h:28,m:"장지에 수묵담채 · 조선 18세기",src:"세계아트",tier:4,tone:10,form:20,dens:60,paper:1,story:1},
  {img:"sa02",a:"박수근",t:"귀로",w:41,h:31.7,m:"캔버스에 혼합재료 · 1962 · 6F",src:"세계아트",tier:4,tone:25,form:20,dens:65,story:1},
@@ -1251,8 +1259,7 @@ async function adminView(){
       <input id="pw" type="password" placeholder="접속 코드" autofocus><button class="btn" id="pwgo">열기</button><div id="gerr" class="err" hidden>코드가 맞지 않습니다.</div></section>`;
     const go=async()=>{
       const v=document.getElementById("pw").value.trim();
-      const a=await askSheet({kind:"auth",code:v});
-      if(a&&a.auth===true){ try{sessionStorage.setItem("am_code",v);sessionStorage.setItem("am_ok","1")}catch(e){} adminView(); }
+      if(await tryAdminLogin(v)){ try{sessionStorage.setItem("am_ok","1")}catch(e){} adminView(); }
       else document.getElementById("gerr").hidden=false;
     };
     document.getElementById("pwgo").onclick=go; document.getElementById("pw").onkeydown=e=>{if(e.key==="Enter")go()}; return;
