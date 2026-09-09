@@ -37,6 +37,8 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--ground);color:var(--ink);font-family:"Pretendard",-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased;word-break:keep-all}
 .wrap{max-width:540px;margin:0 auto;padding:0 20px 64px;min-height:100vh;display:flex;flex-direction:column}
+html.noscroll,html.noscroll body{height:100%;overflow:hidden;overscroll-behavior:none}
+html.noscroll .wrap{min-height:0;height:100vh;height:100lvh;padding-bottom:0}
 .mono{font-variant-numeric:tabular-nums;letter-spacing:.02em}
 b,strong{font-weight:700}
 
@@ -238,8 +240,10 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* ===== VIP 웹패스 ===== */
-.logorail{position:relative;overflow:hidden;margin:0 0 14px;padding:11px 0;
-  border-top:1px solid rgba(201,162,39,.28);border-bottom:1px solid rgba(201,162,39,.28)}
+.logorail{position:relative;overflow:hidden;margin:0 0 14px;padding:9px 0 13px;
+  border-bottom:1px solid rgba(201,162,39,.26);
+  -webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,0) 0,#000 22px,#000 calc(100% - 22px),rgba(0,0,0,0) 100%);
+  mask-image:linear-gradient(90deg,rgba(0,0,0,0) 0,#000 22px,#000 calc(100% - 22px),rgba(0,0,0,0) 100%)}
 .logorail .track{display:flex;align-items:center;gap:34px;width:max-content;animation:railmove 24s linear infinite}
 .logorail img{display:block;opacity:1;width:auto;flex:none}
 @keyframes railmove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -595,6 +599,7 @@ function bar(){
     <div class="rail">${segs}</div></header>`;
 }
 function render(){
+  document.documentElement.classList.toggle("noscroll", step===-1);
   if(step===-1) return intro();
   if(step<Q.length) return question();
   if(step===Q.length) return photoStep();
