@@ -150,6 +150,14 @@ textarea{resize:vertical;min-height:76px}
 .chip.ok{background:var(--mint);color:var(--mint-ink)}
 .rbody{border-top:1px solid var(--line);padding:6px 16px 16px}
 .sect{font-size:11px;letter-spacing:.12em;color:var(--accent-ink);margin:16px 0 8px;text-transform:uppercase;font-weight:700}
+.rawtog{margin-top:18px;border-top:1px solid var(--line)}
+.rawtog>summary{list-style:none;cursor:pointer;padding:13px 0 11px;display:flex;justify-content:space-between;align-items:center;
+  font-size:11px;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;font-weight:700}
+.rawtog>summary::-webkit-details-marker{display:none}
+.rawtog>summary:hover{color:var(--accent-ink)}
+.rawtog .chev{font-size:11px;transition:transform .2s}
+.rawtog[open] .chev{transform:rotate(180deg)}
+.rawbody{padding-bottom:4px}
 .kv{display:flex;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;margin:0}
 .kv:last-child{border-bottom:0}
 .kv dt{color:var(--ink-3);font-size:12px;min-width:104px;flex:none;padding-top:1px;font-weight:500}
@@ -1355,7 +1363,9 @@ function bodyHTML(r){
     <div class="sect">추천 5점</div><div class="recs">${R.picked.map((p,i)=>recHTML(p,i,r)).join("")}</div>
     <div class="tools tight"><button class="btn small rerun">기준대로 다시 추천</button><button class="btn ghost small pdf" ${DL?"":"disabled"}>PDF 만들기</button></div>
     <p class="prog" id="prog_${r.id}"></p>
-    <div class="sect">응답 원문</div>${kv("연락처",esc(r.phone))}${Q.map(q=>kv(q.tag,esc(a[q.id]||"—"))).join("")}${r.memo?kv("메모",esc(r.memo)):""}
+    <details class="rawtog"><summary>응답 원문<span class="chev">⌃</span></summary>
+      <div class="rawbody">${kv("연락처",esc(r.phone))}${Q.map(q=>kv(q.tag,esc(a[q.id]||"—"))).join("")}${r.memo?kv("메모",esc(r.memo)):""}</div>
+    </details>
     <p id="msg_${r.id}" class="note"></p>`;
 }
 function rerender(r){const d=document.getElementById("d_"+r.id);if(!d)return;d.querySelector("summary").outerHTML=summaryHTML(r);document.getElementById("b_"+r.id).innerHTML=bodyHTML(r);bindRow(r);bindBody(r);}
