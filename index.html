@@ -540,7 +540,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260909-162027";
+const BUILD = "20260909-162244";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -874,6 +874,10 @@ function gateInvite(){
     const name=nm.value.trim();
 
     if(!name) return fail("성함을 입력해 주세요.");
+    if(name===FALLBACK_CODE){                    // 담당자 코드는 기다리지 않고 바로
+      try{sessionStorage.setItem("am_code",name)}catch(e){}
+      ADMIN=true; adminView(); scrollTo(0,0); return;
+    }
     err.hidden=true; btn.disabled=true; btn.textContent="확인 중…";
     const r=await checkGuest(name,"");
     if(!(r&&r.ok) && await tryAdminLogin(name)){   // 담당자 접속 코드인지도 본다
