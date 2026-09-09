@@ -374,6 +374,10 @@ input,textarea,select{background:#101012}
 .introq{font-size:25px;line-height:1.42;margin:0;letter-spacing:-.02em}
 .lockwrap{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;text-align:center;padding:70px 0}
 .lockwrap h1{font-size:25px}
+.gateform{display:flex;flex-direction:column;gap:9px;margin:18px auto 0;max-width:15em;text-align:left}
+.gateform input{text-align:center;font-size:15px;padding:11px 12px}
+.gateform .btn{width:100%;margin-top:2px;padding:12px 20px;font-size:14px}
+.gateform .err{text-align:center;font-size:12.5px}
 .lockseal{width:60px;height:60px;border-radius:50%;border:1px solid var(--gold);display:grid;place-items:center;color:var(--accent-ink);font-size:22px}
 
 /* ===== 큐레이터 · 초대 발급 ===== */
@@ -559,11 +563,20 @@ function b64d(t){try{const s=atob(t.replace(/-/g,"+").replace(/_/g,"/"));
   return JSON.parse(new TextDecoder().decode(Uint8Array.from(s,c=>c.charCodeAt(0))));}catch(e){return null}}
 function readInvite(){const m=(location.hash||"").match(/[#&]v=([A-Za-z0-9\-_]+)/); if(!m) return null;
   const o=b64d(m[1]); return (o&&o.n)?o:null;}
+function readRemembered(){ try{const o=JSON.parse(lsGet("am_guest")||"null"); return (o&&o.n)?o:null;}catch(e){return null} }
 let INV=readInvite(), PREVIEW=false, ADMIN=false;
 function lsGet(k){try{return localStorage.getItem(k)||""}catch(e){return ""}}
 function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 /* 이 페이지가 올라가 있는 주소. 발급 링크와 QR 이 이 주소로 만들어진다. */
 const SITE_URL = "https://weekly-studio.github.io/space-art-match/";
+async function checkGuest(name,tail){
+  if(!sheetOn()) return {ok:false,reason:"unset"};
+  try{
+    const res=await fetch(SHEET_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify({kind:"check",name,tail})});
+    return await res.json();
+  }catch(e){ return {ok:false,reason:"net"}; }
+}
 function baseURL(){const b=lsGet("am_base").trim(); return (b||SITE_URL||location.href).split("#")[0];}
 function openInvitePreview(v){
   INV={n:v.name,t:v.title,p:v.phone||"",c:v.code,d:v.at,by:v.by||""};
@@ -670,14 +683,45 @@ function intro(){
   document.getElementById("go").onclick=()=>{step=0;render();scrollTo(0,0)};
 }
 function gateInvite(){
-  app.innerHTML=`<section class="lockwrap">
-    <div class="lockseal">✦</div>
-    <div class="vipmark">Invitation Only</div>
-    <h1>초대받으신 분만<br>진행하실 수 있습니다.</h1>
-    <p class="lede">이 컨설팅은 큐레이터와 상담을 마치신 분께 개별 발급되는 전용 링크로만 열립니다. 받으신 링크로 다시 들어와 주세요.</p>
-    <p class="note">링크를 받지 못하셨다면 담당 큐레이터에게 말씀해 주세요.</p>
-    <button class="plink" id="gcur">큐레이터 화면</button>
-  </section>`;
+  app.innerHTML=`<div class="deco-bg" style="background-image:url(${BGIMG})"></div>
+    ${logoRail()}
+    <section class="intro pass-intro">
+    <div class="introscroll">
+      <div class="invite">
+        ${HOST.logo?`<div class="inv-logo" role="img" aria-label="${esc(HOST.name)}" style="-webkit-mask:url(${HOST.logo}) center/contain no-repeat;mask:url(${HOST.logo}) center/contain no-repeat"></div>`:""}
+        <div class="inv-rule"></div>
+        <p class="inv-eyebrow">Invitation Only</p>
+        <p class="inv-hello">초대받으신 분만<br>진행하실 수 있습니다.</p>
+        <p class="inv-body">상담 때 알려주신 성함을 넣어 주세요.</p>
+        <div class="gateform">
+          <input id="g-name" placeholder="성함" autocomplete="name" enterkeyhint="go">
+          <div id="g-err" class="err" hidden></div>
+          <button class="btn" id="g-go">확인</button>
+        </div>
+        <p class="inv-transfer">확인이 안 되시면 담당 큐레이터에게 말씀해 주세요.</p>
+      </div>
+    </div>
+    </section>`;
+  const nm=document.getElementById("g-name"),
+        btn=document.getElementById("g-go"), err=document.getElementById("g-err");
+  const fail=m=>{err.hidden=false; err.textContent=m; btn.disabled=false; btn.textContent="확인";};
+  const go=async()=>{
+    const name=nm.value.trim();
+    if(name===PASS){ ADMIN=true; adminView(); scrollTo(0,0); return; }   // 큐레이터 바로 진입
+    if(!name) return fail("성함을 입력해 주세요.");
+    err.hidden=true; btn.disabled=true; btn.textContent="확인 중…";
+    const r=await checkGuest(name,"");
+    if(r&&r.ok){
+      INV={n:r.name,t:r.title||"님",p:r.phone||"",c:r.code||"",d:r.at||"",by:r.by||""};
+      lsSet("am_guest",JSON.stringify(INV));
+      step=-1; render(); scrollTo(0,0); return;
+    }
+    if(r&&r.reason==="net")   return fail("지금은 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+    if(r&&r.reason==="unset") return fail("확인 준비가 아직 끝나지 않았습니다. 담당 큐레이터에게 말씀해 주세요.");
+    fail("초대 명단에서 찾지 못했습니다. 성함을 다시 확인해 주세요.");
+  };
+  btn.onclick=go;
+  nm.onkeydown=e=>{if(e.key==="Enter") go();};
 }
 function question(){
   const q=Q[step];
@@ -1282,7 +1326,7 @@ app.addEventListener("click",e=>{
   else if(t.id==="gcur"){ADMIN=true;adminView();scrollTo(0,0);}
 });
 if(isAdmin()) adminView();
-else if(INV){ if(/[#&]done\b/.test(location.hash||"")) step=Q.length+2; render(); }
+else if(INV||(INV=readRemembered())){ if(/[#&]done\b/.test(location.hash||"")) step=Q.length+2; render(); }
 else gateInvite();
 addEventListener("hashchange",()=>location.reload());
 </script>
