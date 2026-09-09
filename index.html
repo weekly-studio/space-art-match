@@ -290,6 +290,9 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 
 .deco-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100lvh;z-index:-1;pointer-events:none;
   background-color:#0A0A0B;background-position:center;background-size:cover;background-repeat:no-repeat}
+.deco-bg.plain{background-image:none!important;background-color:#0B0B0C}
+.pass-intro.gate-screen{padding:clamp(54px,9vh,84px) 4px clamp(36px,7vh,64px)}
+.gate-screen .inv-logo{width:min(52%,168px)}
 @media (min-aspect-ratio:62/100){ .deco-bg{background-size:100% 100%} }
 .deco{position:relative;margin:0;padding:0}
 .invite{position:relative;z-index:1;background:transparent;padding:8px 4px 4px;text-align:center}
@@ -691,9 +694,10 @@ function intro(){
   document.getElementById("go").onclick=()=>{step=0;render();scrollTo(0,0)};
 }
 function gateInvite(){
-  app.innerHTML=`<div class="deco-bg" style="background-image:url(${BGIMG})"></div>
+  document.documentElement.classList.add("noscroll");
+  app.innerHTML=`<div class="deco-bg plain"></div>
     ${logoRail()}
-    <section class="intro pass-intro">
+    <section class="intro pass-intro gate-screen">
     <div class="introscroll">
       <div class="invite">
         ${HOST.logo?`<div class="inv-logo" role="img" aria-label="${esc(HOST.name)}" style="-webkit-mask:url(${HOST.logo}) center/contain no-repeat;mask:url(${HOST.logo}) center/contain no-repeat"></div>`:""}
