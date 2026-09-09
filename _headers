@@ -1,0 +1,7 @@
+# 넷리파이 전용. index.html 은 늘 서버에 확인하고 받아 옛 화면이 남지 않게 한다.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+/version.txt
+  Cache-Control: no-store
