@@ -570,6 +570,10 @@ function openInvitePreview(v){
   INV={n:v.name,t:v.title,p:v.phone||"",c:v.code,d:v.at,by:v.by||""};
   PREVIEW=true; ADMIN=false; step=-1; ans={}; photos=[]; render(); scrollTo(0,0);
 }
+function openDonePreview(v){
+  INV={n:v.name,t:v.title,p:v.phone||"",c:v.code,d:v.at,by:v.by||""};
+  PREVIEW=true; ADMIN=false; step=Q.length+2; render(); scrollTo(0,0);
+}
 function backToAdmin(){ INV=readInvite(); PREVIEW=false; ADMIN=true; adminView(); scrollTo(0,0); }
 function pvbar(){ return PREVIEW?`<div class="pvbar"><span>고객에게 보이는 화면 미리보기</span><button class="plink" id="pvback">큐레이터 화면으로 ↩</button></div>`:""; }
 function honorOnly(){return (INV&&INV.t)||"님"}
@@ -1049,7 +1053,7 @@ function inviteRow(v){
     <div class="rtop"><span class="rname">${esc(v.name)} ${esc(v.title||"님")}</span><span class="chip ${done?"ok":"warn"}">${done?"컨설팅 완료":"발송 대기"}</span></div>
     <div class="invmeta mono">${esc((v.at||"").slice(0,10))} · ${esc(v.phone||"연락처 없음")} · 코드 ${esc(v.code)}${v.by?" · 담당 "+esc(v.by):""}</div>
     ${v.memo?`<div class="invmemo">${esc(v.memo)}</div>`:""}
-    <div class="invact"><button class="btn ghost small ilink">링크 복사</button><button class="btn ghost small imsg">카톡 문구 복사</button><button class="plink iqr">QR</button><button class="plink iopen">미리보기</button><button class="plink idel">삭제</button></div>
+    <div class="invact"><button class="btn ghost small ilink">링크 복사</button><button class="btn ghost small imsg">카톡 문구 복사</button><button class="plink iqr">QR</button><button class="plink iopen">미리보기</button><button class="plink idone">마지막 화면</button><button class="plink idel">삭제</button></div>
   </div>`;
 }
 function inviteSection(){
@@ -1107,6 +1111,7 @@ function bindInvites(){
       d.showModal();
     };
     el.querySelector(".iopen").onclick=()=>openInvitePreview(v);
+    el.querySelector(".idone").onclick=()=>openDonePreview(v);
     el.querySelector(".idel").onclick=async()=>{
       if(!confirm(v.name+" "+(v.title||"님")+" 초대 링크를 삭제할까요? 이미 보낸 링크는 열리지 않게 됩니다.")) return;
       try{await DB.doc("invites/"+v.code).delete();}catch(_){}
@@ -1277,6 +1282,8 @@ app.addEventListener("click",e=>{
   if(t.id==="pvback"){backToAdmin();}
   else if(t.id==="gcur"){ADMIN=true;adminView();scrollTo(0,0);}
 });
-if(isAdmin()) adminView(); else if(INV) render(); else gateInvite();
+if(isAdmin()) adminView();
+else if(INV){ if(/[#&]done\b/.test(location.hash||"")) step=Q.length+2; render(); }
+else gateInvite();
 addEventListener("hashchange",()=>location.reload());
 </script>
