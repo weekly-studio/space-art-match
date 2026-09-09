@@ -539,7 +539,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260909-154941";
+const BUILD = "20260909-155214";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -1270,7 +1270,7 @@ function adminResponses(loadErr){
   ROWS.forEach(r=>{bindRow(r);bindBody(r);});
 }
 
-function inviteDone(v){return v.status==="done"||ROWS.some(r=>r.inviteCode&&r.inviteCode===v.code)}
+function inviteDone(v){return v.done===true||v.status==="done"||ROWS.some(r=>r.inviteCode&&r.inviteCode===v.code)}
 function inviteMsg(v){
   const h=v.name+" "+(v.title||"님");
   return `안녕하세요 ${h}, ${HOST.name} ${v.by||""}입니다.\n\n통화에서 들려주신 공간에 맞춰 ${h}만을 위한 공간 컨설팅을 준비했습니다. 아래는 ${h}께만 발급된 전용 링크입니다. (문항 12개 · 약 2분)\n\n${inviteURL(v)}\n\n답변 주시면 보유 작품 중 ${h}의 벽에 실제로 맞는 5점을 직접 골라, 공간 사진 위에 실제 크기로 앉힌 3D 배치 시뮬레이션과 함께 보내드리겠습니다.`;
