@@ -1124,6 +1124,7 @@ async function loadAll(){
 let ADMINPAGE="home";
 
 async function adminView(){
+  document.documentElement.classList.remove("noscroll");   // 성함 화면에서 걸어둔 잠금을 푼다
   if(sessionStorage.getItem("am_ok")!=="1"){
     app.innerHTML=`<section class="gate"><h1>큐레이터 화면</h1><p class="note">초대 링크를 발급하고, 들어온 응답과 추천 5점을 확인하는 화면입니다.</p>
       <input id="pw" type="password" placeholder="접속 코드" autofocus><button class="btn" id="pwgo">열기</button><div id="gerr" class="err" hidden>코드가 맞지 않습니다.</div></section>`;
