@@ -539,7 +539,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260909-155214";
+const BUILD = "20260909-160750";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -650,6 +650,24 @@ async function checkGuest(name,tail){
       body:JSON.stringify({kind:"check",name,tail})});
     return await res.json();
   }catch(e){ return {ok:false,reason:"net"}; }
+}
+function mergeInvites(items){
+  (items||[]).forEach(v=>{ if(v.code) INVITES.push({...v,phone:"",fromSheet:true}); });
+  const byCode=new Map();                       // 연락처가 있는 로컬 기록을 남긴다
+  INVITES.forEach(v=>{ const p=byCode.get(v.code); if(!p||(!p.phone&&v.phone)) byCode.set(v.code,v); });
+  INVITES=[...byCode.values()].sort((a,b)=>(b.at||"").localeCompare(a.at||""));
+}
+/* 시트 목록을 뒤에서 받아 와 화면만 살짝 갈아 끼운다 */
+function syncInvites(){
+  if(!sheetOn()) return;
+  fetchInvites().then(items=>{
+    if(!items.length) return;
+    lsSet("am_inv_cache",JSON.stringify(items));
+    mergeInvites(items);
+    const list=document.getElementById("invlist");
+    if(list){ list.innerHTML=INVITES.map(inviteRow).join(""); bindInvites(); }
+    else if(ADMINPAGE==="home") adminHome("");
+  }).catch(()=>{});
 }
 async function fetchInvites(){
   if(!sheetOn()) return [];
@@ -1172,17 +1190,9 @@ async function loadAll(){
   if(SAMPLE===null){SAMPLE=await useCap("sample").catch(()=>null); if(SAMPLE){const lim=await SAMPLE.limits().catch(()=>null);IMGOK=!!(lim&&lim.images);} else SAMPLE=false;}
   try{const iv=await DB.collection("invites").get();
     INVITES=(iv.docs||[]).map(d=>({code:d.id,...(d.data()||{})}));}catch(_){INVITES=[];}
-  // 시트에 남은 발급 기록을 합친다. 기기를 바꿔도 같은 목록이 보인다.
-  try{
-    const seen=new Set(INVITES.map(v=>v.code));
-    (await fetchInvites()).forEach(v=>{ if(v.code&&!seen.has(v.code)) INVITES.push({...v,phone:"",fromSheet:true}); });
-  }catch(_){}
-  {  // 같은 코드가 두 번 들어오지 않게 (연락처가 있는 로컬 기록을 남긴다)
-    const byCode=new Map();
-    INVITES.forEach(v=>{ const p=byCode.get(v.code); if(!p||(!p.phone&&v.phone)) byCode.set(v.code,v); });
-    INVITES=[...byCode.values()];
-  }
-  INVITES.sort((a,b)=>(b.at||"").localeCompare(a.at||""));
+  // 시트 조회는 3초쯤 걸린다. 지난번 목록을 먼저 보여주고 뒤에서 갱신한다.
+  try{ mergeInvites(JSON.parse(lsGet("am_inv_cache")||"[]")); }catch(_){ mergeInvites([]); }
+  syncInvites();
   if(DL===null){DL=await useCap("downloads").catch(()=>null)||false;}
 }
 let ADMINPAGE="home";
