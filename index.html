@@ -254,13 +254,8 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 .hellosub{margin:0 0 20px;font-size:13.5px;color:var(--ink-2);line-height:1.7}
 
 /* ===== 아르데코 초대장 ===== */
-.logorail{position:relative;overflow:hidden;margin:0 0 14px;padding:11px 0;border-top:1px solid rgba(201,162,39,.28);border-bottom:1px solid rgba(201,162,39,.28)}
-.logorail .track{display:flex;align-items:center;gap:34px;width:max-content;animation:railmove 24s linear infinite}
-.logorail img{display:block;opacity:1;width:auto;flex:none}
-.logorail .wordmark{opacity:1}
-@keyframes railmove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-.deco-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;
+.deco-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100lvh;z-index:-1;pointer-events:none;
   background-color:#0A0A0B;background-position:center;background-size:cover;background-repeat:no-repeat}
 @media (min-aspect-ratio:62/100){ .deco-bg{background-size:100% 100%} }
 .deco{position:relative;margin:0;padding:0}
@@ -308,7 +303,7 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 @media (min-aspect-ratio:62/100){
   .intro.pass-intro{padding:15vh max(0px,calc(21vw - 20px)) 10vh}
 }
-.pass-intro .btn{margin-top:24px}
+.pass-intro .btn{margin-top:22px;align-self:center;width:auto;padding:11px 26px;font-size:13.5px;letter-spacing:.04em}
 .pass-intro .infotog{margin-top:10px}
 .pass-intro .crest{margin-top:26px;border-bottom:0;border-top:1px solid var(--line);padding-top:18px}
 .pass-intro .note{margin-top:14px}
@@ -511,16 +506,6 @@ function markHTML(o,cls){
   return o.logo ? `<img class="wordmark img ${cls||""}" src="${o.logo}" alt="${esc(o.name)}">`
                 : `<span class="wordmark ${cls||""}">${esc(o.name)}</span>`;
 }
-function railItems(){
-  const all=CREDITS.reduce((a,c)=>a.concat(c.items),[]);
-  return all.map(o=>o.logo
-    ? `<img src="${o.logo}" alt="${esc(o.name)}" style="height:${o.railH||26}px">`
-    : `<span class="wordmark">${esc(o.name)}</span>`).join("");
-}
-function logoRail(){
-  const one=railItems();
-  return `<div class="logorail"><div class="track">${one}${one}</div></div>`;
-}
 function crestRow(){
   return `<div class="crest">${CREDITS.map((c,i)=>`<div class="crestgroup">
     <span class="crestlab">${esc(c.lab)}</span>${c.items.map(o=>markHTML(o,i===0?"host":"")).join('<i class="dot"></i>')}
@@ -598,7 +583,6 @@ function render(){
 }
 function intro(){
   app.innerHTML=`<div class="deco-bg" style="background-image:url(${BGIMG})"></div>`+bar()+`<section class="intro pass-intro">
-    ${logoRail()}
     <div class="deco">
       <div class="invite">
         ${HOST.logo?`<div class="inv-logo" role="img" aria-label="${esc(HOST.name)}" style="-webkit-mask:url(${HOST.logo}) center/contain no-repeat;mask:url(${HOST.logo}) center/contain no-repeat"></div>`
