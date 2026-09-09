@@ -539,7 +539,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260909-160750";
+const BUILD = "20260909-161316";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -658,16 +658,20 @@ function mergeInvites(items){
   INVITES=[...byCode.values()].sort((a,b)=>(b.at||"").localeCompare(a.at||""));
 }
 /* 시트 목록을 뒤에서 받아 와 화면만 살짝 갈아 끼운다 */
+let INVSYNC="idle";                       // idle · loading · done · fail
+function paintInvites(){
+  const list=document.getElementById("invlist");
+  if(list){ list.innerHTML=inviteListHTML(); bindInvites(); }
+  else if(ADMINPAGE==="home") adminHome("");
+}
 function syncInvites(){
-  if(!sheetOn()) return;
+  if(!sheetOn()){ INVSYNC="done"; return; }
+  INVSYNC="loading"; paintInvites();
   fetchInvites().then(items=>{
-    if(!items.length) return;
-    lsSet("am_inv_cache",JSON.stringify(items));
-    mergeInvites(items);
-    const list=document.getElementById("invlist");
-    if(list){ list.innerHTML=INVITES.map(inviteRow).join(""); bindInvites(); }
-    else if(ADMINPAGE==="home") adminHome("");
-  }).catch(()=>{});
+    INVSYNC="done";
+    if(items.length){ lsSet("am_inv_cache",JSON.stringify(items)); mergeInvites(items); }
+    paintInvites();
+  }).catch(()=>{ INVSYNC="fail"; paintInvites(); });
 }
 async function fetchInvites(){
   if(!sheetOn()) return [];
@@ -1233,7 +1237,7 @@ function adminHome(loadErr){
       <button class="mcard" id="m-inv">
         <b>초대 링크 발급하기</b>
         <span>상담을 마친 분께 보낼 개인 링크를 만듭니다</span>
-        <i>발급 ${INVITES.length}건 · 대기 ${waiting}건</i>
+        <i>${INVSYNC==="loading"&&!INVITES.length?"명단 불러오는 중…":`발급 ${INVITES.length}건 · 대기 ${waiting}건`}</i>
       </button>
       <button class="mcard" id="m-res">
         <b>응답 보기 · DB 관리</b>
@@ -1297,7 +1301,7 @@ function inviteRow(v){
 function inviteSection(){
   const by=lsGet("am_curator");
   const waiting=INVITES.filter(v=>!inviteDone(v)).length;
-  const rows=INVITES.map(inviteRow).join("")||`<p class="note">아직 발급한 초대 링크가 없습니다. 위에서 이름을 넣고 만들어 보세요.</p>`;
+  const rows=inviteListHTML();
   return `  <p class="note">상담(TM)을 마친 분께만 개별 링크를 만들어 보내세요. 링크를 열면 “안녕하세요, ${"${"}이름${"}"} 대표님”으로 시작하는 VIP 웹패스가 뜨고 성함·연락처가 미리 채워집니다. 대면 미팅에서는 <b>QR</b>을 띄워 고객 휴대폰으로 스캔하게 하세요.</p>
   <div class="invform">
     <div class="irow">
@@ -1312,8 +1316,16 @@ function inviteSection(){
     <button class="btn small" id="i-make">초대 링크 만들기</button>
   </div>
   <p class="invcount">${sheetOn()?"구글 시트 연동됨 — 응답이 시트로 쌓입니다.":"<b style=\"color:var(--rose-ink)\">구글 시트 미연동</b> — 응답이 고객 브라우저에만 남습니다."}</p>
-  <p class="invcount">발급 ${INVITES.length}건 · 대기 ${waiting}건 · 완료 ${INVITES.length-waiting}건</p>
+  <p class="invcount">${INVSYNC==="loading"&&!INVITES.length?"명단 불러오는 중…":`발급 ${INVITES.length}건 · 대기 ${waiting}건 · 완료 ${INVITES.length-waiting}건`}</p>
   <div class="invlist" id="invlist">${rows}</div>`;
+}
+function inviteListHTML(){
+  if(INVITES.length) return INVITES.map(inviteRow).join("")
+    + (INVSYNC==="loading"?`<p class="note">시트에서 최신 명단을 불러오는 중…</p>`:"")
+    + (INVSYNC==="fail"?`<p class="err">시트 명단을 불러오지 못했습니다. 새로고침해 주세요.</p>`:"");
+  if(INVSYNC==="loading") return `<p class="note">시트에서 명단을 불러오는 중… (2~4초)</p>`;
+  if(INVSYNC==="fail")    return `<p class="err">시트 명단을 불러오지 못했습니다. 새로고침해 주세요.</p>`;
+  return `<p class="note">아직 발급한 초대 링크가 없습니다. 위에서 이름을 넣고 만들어 보세요.</p>`;
 }
 function bindInvites(){
   bindPhone(document.getElementById("i-phone"));
