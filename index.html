@@ -1,6 +1,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>공간 작품 매칭 초대장</title>
+<title>작품 퍼스널 컨설팅</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="카네기LEE 재단">
+<meta property="og:title" content="작품 퍼스널 컨설팅">
+<meta property="og:description" content="초대받으신 분께만 열리는 개인 상담입니다. 성함을 넣어 주세요.">
+<meta property="og:url" content="https://private-art-collection.netlify.app/">
+<meta property="og:image" content="https://private-art-collection.netlify.app/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="초대받으신 분께만 열리는 개인 상담입니다.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap">
@@ -529,7 +539,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260909-150749";
+const BUILD = "20260909-151528";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -641,6 +651,15 @@ async function checkGuest(name,tail){
     return await res.json();
   }catch(e){ return {ok:false,reason:"net"}; }
 }
+async function fetchInvites(){
+  if(!sheetOn()) return [];
+  try{
+    const res=await fetch(SHEET_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify({kind:"invites"})});
+    const j=await res.json();
+    return (j&&j.ok&&Array.isArray(j.items))?j.items:[];
+  }catch(e){ return []; }
+}
 function baseURL(){const b=lsGet("am_base").trim(); return (b||SITE_URL||location.href).split("#")[0].split("?")[0];}
 function openInvitePreview(v){
   INV={n:v.name,t:v.title,p:v.phone||"",c:v.code,d:v.at,by:v.by||""};
@@ -712,7 +731,7 @@ function pct(v,max){return Math.round(((v+max)/(2*max))*100)}
 function bar(){
   const segs=Q.map((_,i)=>`<div class="seg ${i<step?"done":(i===step?"now":"")}"></div>`).join("");
   const n=Math.min(Math.max(step,0)+1,12);
-  return pvbar()+`<header class="bar"><div class="brandrow"><div class="brand">${INV?`<span class="forwhom">${esc(honor())} 전용</span>`:"Space · Art Match"}</div>
+  return pvbar()+`<header class="bar"><div class="brandrow"><div class="brand">${INV?`<span class="forwhom">${esc(honor())} 전용</span>`:"작품 퍼스널 컨설팅"}</div>
     <div class="counter mono">${step<0?"12문항 · 약 2분":(step>=12?"거의 다 왔어요":`${n} / 12`)}</div></div>
     <div class="rail">${segs}</div></header>`;
 }
@@ -1152,8 +1171,18 @@ async function loadAll(){
   if(!Object.keys(WIMG).length){const ws=await DB.collection("works").get(); (ws.docs||[]).forEach(d=>{WIMG[d.id]=(d.data()||{}).data});}
   if(SAMPLE===null){SAMPLE=await useCap("sample").catch(()=>null); if(SAMPLE){const lim=await SAMPLE.limits().catch(()=>null);IMGOK=!!(lim&&lim.images);} else SAMPLE=false;}
   try{const iv=await DB.collection("invites").get();
-    INVITES=(iv.docs||[]).map(d=>({code:d.id,...(d.data()||{})}));
-    INVITES.sort((a,b)=>(b.at||"").localeCompare(a.at||""));}catch(_){INVITES=[];}
+    INVITES=(iv.docs||[]).map(d=>({code:d.id,...(d.data()||{})}));}catch(_){INVITES=[];}
+  // 시트에 남은 발급 기록을 합친다. 기기를 바꿔도 같은 목록이 보인다.
+  try{
+    const seen=new Set(INVITES.map(v=>v.code));
+    (await fetchInvites()).forEach(v=>{ if(v.code&&!seen.has(v.code)) INVITES.push({...v,phone:"",fromSheet:true}); });
+  }catch(_){}
+  {  // 같은 코드가 두 번 들어오지 않게 (연락처가 있는 로컬 기록을 남긴다)
+    const byCode=new Map();
+    INVITES.forEach(v=>{ const p=byCode.get(v.code); if(!p||(!p.phone&&v.phone)) byCode.set(v.code,v); });
+    INVITES=[...byCode.values()];
+  }
+  INVITES.sort((a,b)=>(b.at||"").localeCompare(a.at||""));
   if(DL===null){DL=await useCap("downloads").catch(()=>null)||false;}
 }
 let ADMINPAGE="home";
@@ -1249,8 +1278,8 @@ function inviteMsg(v){
 function inviteRow(v){
   const done=inviteDone(v);
   return `<div class="inv ${done?"done":""}" data-code="${esc(v.code)}">
-    <div class="rtop"><span class="rname">${esc(v.name)} ${esc(v.title||"님")}</span><span class="chip ${done?"ok":"warn"}">${done?"컨설팅 완료":"발송 대기"}</span></div>
-    <div class="invmeta mono">${esc((v.at||"").slice(0,10))} · ${esc(v.phone||"연락처 없음")} · 코드 ${esc(v.code)}${v.by?" · 담당 "+esc(v.by):""}</div>
+    <div class="rtop"><span class="rname">${esc(v.name)} ${esc(v.title||"님")}</span><span class="chip ${done?"ok":"warn"}">${done?"컨설팅 완료":"발송 대기"}</span>${v.fromSheet?`<span class="chip">시트 기록</span>`:""}</div>
+    <div class="invmeta mono">${esc((v.at||"").slice(0,10))} · ${v.phone?esc(v.phone):(v.fromSheet?"연락처는 시트에":"연락처 없음")} · 코드 ${esc(v.code)}${v.by?" · 담당 "+esc(v.by):""}</div>
     ${v.memo?`<div class="invmemo">${esc(v.memo)}</div>`:""}
     <div class="invact"><button class="btn ghost small ilink">링크 복사</button><button class="btn ghost small imsg">카톡 문구 복사</button><button class="plink iqr">QR</button><button class="plink iopen">미리보기</button><button class="plink idone">마지막 화면</button><button class="plink idel">삭제</button></div>
   </div>`;
@@ -1312,7 +1341,8 @@ function bindInvites(){
     el.querySelector(".iopen").onclick=()=>openInvitePreview(v);
     el.querySelector(".idone").onclick=()=>openDonePreview(v);
     el.querySelector(".idel").onclick=async()=>{
-      if(!confirm(v.name+" "+(v.title||"님")+" 초대 링크를 삭제할까요? 이미 보낸 링크는 열리지 않게 됩니다.")) return;
+      if(!confirm(v.name+" "+(v.title||"님")+" 초대를 이 화면에서 지울까요?\n구글 시트의 발급 기록은 그대로 남고, 그 성함으로는 계속 들어올 수 있습니다."))
+        return;
       try{await DB.doc("invites/"+v.code).delete();}catch(_){}
       INVITES=INVITES.filter(x=>x.code!==v.code);
       document.getElementById("invlist").innerHTML=INVITES.map(inviteRow).join("")||`<p class="note">아직 발급한 초대 링크가 없습니다.</p>`;
@@ -1502,7 +1532,7 @@ function pdfPages(r){
   const date=new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric"});
   const axis=(n,l,v,rr,c)=>`<div class="ax"><b style="color:${c||"#24211C"}">${n}</b><div class="t"><div class="d" style="left:${Math.max(0,Math.min(100,+v||50))}%"></div></div><div class="lr"><span>${l}</span><span>${rr}</span></div></div>`;
   const cover=`<div class="pg cover">
-    <div class="head"><span>Space · Art Match · Private</span><span>${date}</span></div>
+    <div class="head"><span>${esc(HOST.name)} · 작품 퍼스널 컨설팅</span><span>${date}</span></div>
     <div class="coverbody">
       ${HOST.logo?`<img class="coverlogo" src="${HOST.logo}">`:""}
       <div class="coverrule"></div>
@@ -1519,7 +1549,7 @@ function pdfPages(r){
       <div class="wmeta">${p.x.w}×${p.x.h}cm · ${esc(p.x.m)}</div>
       <p class="why">${esc(p.reason)}</p>
       ${ai?`<p class="ai"><span class="lab">이 공간에서는</span>${esc(ai)}</p>`:""}
-      <div class="foot"><span>Space · Art Match</span><span>${i+2}</span></div></div>`;}).join("");
+      <div class="foot"><span>작품 퍼스널 컨설팅</span><span>${i+2}</span></div></div>`;}).join("");
   const last=`<div class="pg"><div class="head"><span>한눈에 보기</span><span>${esc(respHonor(r))}</span></div>
     <h1 style="font-size:26px">추천 5점 요약</h1><p class="sub">마음에 드는 번호를 알려주시면, 그 작품을 실제 공간 사진 위에 실제 크기로 앉힌 3D 시뮬레이션을 보내드립니다.</p>
     <div class="list">${R.picked.map((p,i)=>`<div class="li">${WIMG[p.x.img]?`<img src="${WIMG[p.x.img]}">`:"<div></div>"}<div><b>${i+1}. ${esc(p.x.a)} 〈${esc(p.x.t)}〉</b><span>${p.x.w}×${p.x.h}cm · ${esc(p.x.m)} · ${SLOT_SHORT[p.slot]}</span></div></div>`).join("")}</div>
