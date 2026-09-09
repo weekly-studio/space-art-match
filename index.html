@@ -264,24 +264,24 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
   background-color:#0A0A0B;background-position:center;background-size:cover;background-repeat:no-repeat}
 @media (min-aspect-ratio:62/100){ .deco-bg{background-size:100% 100%} }
 .deco{position:relative;margin:0;padding:0}
-.invite{position:relative;z-index:1;background:transparent;padding:16px 4px 10px;text-align:center}
+.invite{position:relative;z-index:1;background:transparent;padding:8px 4px 4px;text-align:center}
 
 
 .inv-logo{width:min(46%,158px);height:38px;margin:0 auto;
   background:linear-gradient(180deg,#F6E7BC 0%,#D8B75A 46%,#9C7C22 100%)}
-.inv-rule{height:1px;margin:20px auto 0;width:70%;
+.inv-rule{height:1px;margin:15px auto 0;width:70%;
   background:linear-gradient(90deg,transparent,rgba(201,162,39,.75),transparent)}
-.inv-eyebrow{margin:16px 0 0;font-family:"Cormorant Garamond",serif;font-size:12px;font-weight:500;
+.inv-eyebrow{margin:10px 0 0;font-family:"Cormorant Garamond",serif;font-size:12px;font-weight:500;
   letter-spacing:.34em;text-indent:.34em;color:#D8B75A;text-transform:uppercase}
-.inv-vip{display:block;width:min(58%,188px);height:auto;margin:14px auto 2px}
+.inv-vip{display:block;width:min(56%,178px);height:auto;margin:10px auto 2px}
 .inv-hello{margin:7px 0 0;font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
 .inv-hello em{font-style:normal;color:#E3C46B;border:0;background:none}
-.inv-body{margin:13px auto 0;max-width:19em;font-size:13.5px;line-height:1.9;color:var(--ink-2)}
-.inv-meta{margin:18px 0 0;font-family:"Cormorant Garamond",serif;font-size:11px;font-weight:500;
+.inv-body{margin:11px auto 0;max-width:19em;font-size:13px;line-height:1.8;color:var(--ink-2)}
+.inv-meta{margin:14px 0 0;font-family:"Cormorant Garamond",serif;font-size:11px;font-weight:500;
   letter-spacing:.16em;text-indent:.16em;color:#C9A227;text-transform:uppercase}
 .inv-code{margin:7px 0 0;font-size:10.5px;letter-spacing:.18em;color:var(--ink-3)}
 .inv-code b{color:#D8B75A;font-weight:700}
-.inv-transfer{margin:14px 0 0;font-family:"Cormorant Garamond",serif;font-size:12px;letter-spacing:.14em;color:var(--ink-3)}
+.inv-transfer{margin:11px 0 0;font-family:"Cormorant Garamond",serif;font-size:12px;letter-spacing:.14em;color:var(--ink-3)}
 
 .infotog{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);
   border-radius:var(--radius-s);padding:15px 17px;font:inherit;font-size:14.5px;font-weight:500;color:var(--ink);cursor:pointer;text-align:left}
@@ -302,7 +302,8 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 .pvbar .plink{color:var(--accent-ink);font-weight:700;font-size:11.5px}
 .intro.pass-intro{gap:0;justify-content:flex-start;flex:none;height:100vh;height:100lvh;overflow:hidden;
   padding:clamp(64px,15vh,120px) max(0px,calc(7.5vw - 20px)) clamp(48px,13vh,110px)}
-.introscroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
+.introscroll{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.introscroll.open{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;justify-content:flex-start;
   -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,0) 0,#000 26px,#000 calc(100% - 30px),rgba(0,0,0,0) 100%);
   mask-image:linear-gradient(180deg,rgba(0,0,0,0) 0,#000 26px,#000 calc(100% - 30px),rgba(0,0,0,0) 100%)}
 .introscroll::-webkit-scrollbar{width:0;height:0}
@@ -312,10 +313,10 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 @media (min-aspect-ratio:62/100){
   .intro.pass-intro{padding:15vh max(0px,calc(21vw - 20px)) 13vh}
 }
-.pass-intro .btn{margin-top:22px;align-self:center;width:auto;padding:11px 26px;font-size:13.5px;letter-spacing:.04em}
-.pass-intro .infotog{margin-top:10px}
+.pass-intro .btn{margin-top:18px;align-self:center;width:auto;padding:11px 26px;font-size:13.5px;letter-spacing:.04em}
+.pass-intro .infotog{margin-top:9px;padding:12px 15px;font-size:13.5px}
 .pass-intro .crest{margin-top:26px;border-bottom:0;border-top:1px solid var(--line);padding-top:18px}
-.pass-intro .note{margin-top:14px}
+.pass-intro .note{margin-top:11px;font-size:11px}
 .pass-intro .infocard{margin-bottom:2px}
 
 /* ===== 블랙 & 골드 마감 ===== */
@@ -630,13 +631,18 @@ function intro(){
       <dl class="inforow"><dt>전용 코드</dt><dd class="code mono">${esc(INV.c||"—")}</dd></dl>
       <dl class="inforow"><dt>구성</dt><dd>12문항 · 공간 사진 3장 · 약 2분</dd></dl>
     </div>
-    <p class="note">알려주신 내용은 작품 추천 안내 목적으로만 사용하며, 안내가 끝나면 파기합니다.</p>
+    <p class="note">알려주신 내용은 작품 추천 안내에만 사용하며, 안내 후 파기합니다.</p>
     </div>
   </section>`;
-  const tg=document.getElementById("itog"), card=document.getElementById("icard");
-  tg.onclick=()=>{const open=tg.getAttribute("aria-expanded")==="true";
+  const tg=document.getElementById("itog"), card=document.getElementById("icard"),
+        sc=app.querySelector(".introscroll");
+  tg.onclick=()=>{
+    const open=tg.getAttribute("aria-expanded")==="true";
     tg.setAttribute("aria-expanded",String(!open)); card.hidden=open;
-    tg.firstChild.nodeValue=open?"초대 정보 열기":"초대 정보 닫기";};
+    tg.firstChild.nodeValue=open?"초대 정보 열기":"초대 정보 닫기";
+    sc.classList.toggle("open",!open);
+    requestAnimationFrame(()=>sc.scrollTo({top:open?0:sc.scrollHeight,behavior:"smooth"}));
+  };
   document.getElementById("go").onclick=()=>{step=0;render();scrollTo(0,0)};
 }
 function gateInvite(){
