@@ -1249,10 +1249,10 @@ function bindInvites(){
   });
 }
 function summaryHTML(r){
-  const a=r.answers||{},n=(PHOTOS[r.id]||[]).length;
-  return `<summary><div class="rtop"><span class="rname">${esc(r.name)}</span><span class="rtime mono">${(r.at||"").slice(0,16).replace("T"," ")}</span></div>
-    <div class="chips"><span class="chip type">${esc(r.type||"—")}</span><span class="chip">${esc(a.place||"—")}</span><span class="chip">${esc(a.wall||"—")}</span><span class="chip">${esc(a.budget||"—")}</span><span class="chip">${MOTIVE_LABEL[r.motive]||"—"}</span>
-    <span class="chip ${n?"":"warn"}">사진 ${n}/3</span>${r.inviteCode?`<span class="chip ok">초대 ${esc((r.invite&&r.invite.name)||"")} ${esc((r.invite&&r.invite.title)||"")}</span>`:""}${r.photoAnalysis?`<span class="chip ok">사진 분석됨</span>`:""}</div></summary>`;
+  const by=(r.invite&&r.invite.by)||"", title=(r.invite&&r.invite.title)||"";
+  return `<summary><div class="rtop"><span class="rname">${esc(r.name)}${title?" "+esc(title):""}</span>
+    <span class="rtime mono">${(r.at||"").slice(0,16).replace("T"," ")}</span></div>
+    ${by?`<div class="chips"><span class="chip">담당 ${esc(by)}</span></div>`:""}</summary>`;
 }
 function resultText(r,R){
   const pa=r.photoAnalysis, a=r.answers||{}; const t=TYPES[r.typeKey]||{};
