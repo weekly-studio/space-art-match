@@ -540,7 +540,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260909-163109";
+const BUILD = "20260909-163907";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -1333,7 +1333,7 @@ function adminResponses(loadErr){
   const today=new Date().toISOString().slice(0,10);
   const tCount=ROWS.filter(r=>(r.at||"").slice(0,10)===today).length;
   const typeTop=(()=>{const m={};ROWS.forEach(r=>{m[r.type]=(m[r.type]||0)+1});const e=Object.entries(m).sort((a,b)=>b[1]-a[1])[0];return e?e[0]:"—";})();
-  const list=ROWS.map(r=>`<details class="resp" id="d_${r.id}" ${ROWS.length===1?"open":""}>${summaryHTML(r)}<div class="rbody" id="b_${r.id}">${bodyHTML(r)}</div></details>`).join("")
+  const list=ROWS.map(r=>`<details class="resp" id="d_${r.id}"><summary-slot>${summaryHTML(r)}</summary-slot><div class="rbody" id="b_${r.id}"></div></details>`.replace("<summary-slot>","").replace("</summary-slot>","")).join("")
     ||`<p class="note">${loadErr?"응답을 불러오지 못했습니다: "+esc(loadErr)
         :RESSYNC==="loading"?"시트에서 응답을 불러오는 중… (2~4초)"
         :RESSYNC==="fail"?"응답을 불러오지 못했습니다. 새로고침해 주세요."
@@ -1544,7 +1544,7 @@ function bodyRest(r){
     </details>
     <p id="msg_${r.id}" class="note"></p>`;
 }
-function rerender(r){const d=document.getElementById("d_"+r.id);if(!d)return;d.querySelector("summary").outerHTML=summaryHTML(r);document.getElementById("b_"+r.id).innerHTML=bodyHTML(r);bindRow(r);bindBody(r);}
+function rerender(r){const d=document.getElementById("d_"+r.id);if(!d)return;d.querySelector("summary").outerHTML=summaryHTML(r);d.dataset.filled="1";document.getElementById("b_"+r.id).innerHTML=bodyHTML(r);bindRow(r);bindBody(r);}
 function say(r,t,isErr){const m=document.getElementById("msg_"+r.id);if(m){m.textContent=t;m.className=isErr?"err":"note ok";}}
 function prog(r,t){const m=document.getElementById("prog_"+r.id);if(m)m.textContent=t||"";}
 async function saveResp(r){const {id,...data}=r;await DB.doc("responses/"+id).set(data);}
@@ -1573,9 +1573,15 @@ JSON만 출력: {"작품제목":"코멘트", ...} — 키는 위 〈 〉 안의 
 
 function bindRow(r){
   const d=document.getElementById("d_"+r.id); if(!d) return;
+  d.ontoggle=()=>{                      // 펼칠 때 처음 한 번만 본문을 만든다
+    if(!d.open || d.dataset.filled) return;
+    d.dataset.filled="1";
+    const b=document.getElementById("b_"+r.id);
+    if(b){ b.innerHTML=bodyHTML(r); bindBody(r); }
+  };
   const stop=e=>{e.preventDefault();e.stopPropagation();};
   const ed=d.querySelector(".redit"), dl=d.querySelector(".rdel");
-  if(ed) ed.onclick=e=>{ stop(e); r._edit=!r._edit; d.open=true;
+  if(ed) ed.onclick=e=>{ stop(e); r._edit=!r._edit; d.open=true; d.dataset.filled="1";
     document.getElementById("b_"+r.id).innerHTML=bodyHTML(r); bindBody(r); };
   if(dl) dl.onclick=async e=>{
     stop(e);
