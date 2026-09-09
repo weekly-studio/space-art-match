@@ -134,7 +134,8 @@ textarea{resize:vertical;min-height:76px}
 .resp summary{padding:14px 16px;cursor:pointer;display:flex;flex-direction:column;gap:6px;list-style:none}
 .resp summary::-webkit-details-marker{display:none}
 .rtop{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-.rname{font-weight:700;font-size:15px}
+.rname{font-weight:700;font-size:15px;display:flex;align-items:baseline;gap:9px}
+.rno{font-style:normal;font-weight:700;font-size:12px;color:var(--accent);min-width:1.4em}
 .rtime{font-size:11px;color:var(--ink-3)}
 .chips{display:flex;flex-wrap:wrap;gap:5px}
 .chip{font-size:11px;padding:3px 9px;background:var(--surface-2);color:var(--ink-2);border-radius:99px;font-weight:500}
@@ -1250,7 +1251,8 @@ function bindInvites(){
 }
 function summaryHTML(r){
   const by=(r.invite&&r.invite.by)||"", title=(r.invite&&r.invite.title)||"";
-  return `<summary><div class="rtop"><span class="rname">${esc(r.name)}${title?" "+esc(title):""}</span>
+  const no=ROWS.indexOf(r)+1;
+  return `<summary><div class="rtop"><span class="rname"><i class="rno mono">${no||"-"}</i>${esc(r.name)}${title?" "+esc(title):""}</span>
     <span class="rtime mono">${(r.at||"").slice(0,16).replace("T"," ")}</span></div>
     ${by?`<div class="chips"><span class="chip">담당 ${esc(by)}</span></div>`:""}</summary>`;
 }
