@@ -366,12 +366,13 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 .infotog:hover{border-color:var(--line-strong)}
 .infotog .chev{color:var(--accent);font-size:12px;transition:transform .2s}
 .infotog[aria-expanded="false"] .chev{transform:rotate(180deg)}
-.infocard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-s);padding:2px 17px;margin-top:8px}
+.infocard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-s);padding:2px 14px;margin-top:8px;max-width:100%;box-sizing:border-box}
 .infocard[hidden]{display:none}
-.inforow{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:13px 0;border-bottom:1px solid var(--line);margin:0}
+.inforow{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 12px;padding:11px 0;border-bottom:1px solid var(--line);margin:0}
 .inforow:last-child{border-bottom:0}
-.inforow dt{color:var(--ink-3);font-size:12.5px;font-weight:500;flex:none}
-.inforow dd{margin:0;text-align:right;font-size:13.5px;color:var(--ink)}
+.inforow dt{color:var(--ink-3);font-size:12px;font-weight:500;flex:none;min-width:4em}
+.inforow dd{margin:0;text-align:right;font-size:13px;color:var(--ink);flex:1 1 auto;min-width:0;
+  overflow-wrap:anywhere;word-break:keep-all;line-height:1.5}
 .inforow dd.code{color:var(--accent-ink);font-weight:700;letter-spacing:.08em}
 .qrdlg{width:min(88vw,340px);background:#fff;border-radius:16px;padding:18px}
 .qrdlg svg{width:100%;height:auto;display:block}
@@ -395,7 +396,8 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 .pass-intro .infotog{margin-top:9px;padding:12px 15px;font-size:13.5px}
 .pass-intro .crest{margin-top:26px;border-bottom:0;border-top:1px solid var(--line);padding-top:18px}
 .pass-intro .note{margin-top:11px;font-size:11px}
-.pass-intro .infocard{margin-bottom:2px}
+.pass-intro .infocard{margin-bottom:2px;max-height:42vh;overflow-y:auto}
+.pass-intro .infocard::-webkit-scrollbar{width:0;height:0}
 
 /* ===== 블랙 & 골드 마감 ===== */
 h1 em{background:none;color:var(--accent-ink);border-bottom:1px solid var(--gold);padding-bottom:1px}
@@ -540,7 +542,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260911-102608";
+const BUILD = "20260911-105140";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
