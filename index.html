@@ -540,7 +540,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260909-163907";
+const BUILD = "20260911-102042";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -652,7 +652,8 @@ async function checkGuest(name,tail){
     return await res.json();
   }catch(e){ return {ok:false,reason:"net"}; }
 }
-function mergeInvites(items){
+function mergeInvites(items,replace){
+  if(replace) INVITES=INVITES.filter(v=>!v.fromSheet);      // 시트가 정답이다
   (items||[]).forEach(v=>{ if(v.code) INVITES.push({...v,phone:"",fromSheet:true}); });
   const byCode=new Map();                       // 연락처가 있는 로컬 기록을 남긴다
   INVITES.forEach(v=>{ const p=byCode.get(v.code); if(!p||(!p.phone&&v.phone)) byCode.set(v.code,v); });
@@ -671,8 +672,8 @@ function syncResponses(){
   RESSYNC="loading";
   fetchResponses().then(items=>{
     RESSYNC="done";
-    const seen=new Set(ROWS.map(r=>r.id));
-    items.forEach(x=>{ if(!seen.has(x.id)) ROWS.push(rowFromSheet(x)); });
+    ROWS=ROWS.filter(r=>!r.fromSheet);                      // 시트가 정답이다
+    items.forEach(x=>ROWS.push(rowFromSheet(x)));
     ROWS.sort((a,b)=>(b.at||"").localeCompare(a.at||""));
     if(ADMINPAGE==="responses") adminResponses("");
     else if(ADMINPAGE==="home") adminHome("");
@@ -683,7 +684,7 @@ function syncInvites(){
   INVSYNC="loading"; paintInvites();
   fetchInvites().then(items=>{
     INVSYNC="done";
-    if(items.length){ lsSet("am_inv_cache",JSON.stringify(items)); mergeInvites(items); }
+    lsSet("am_inv_cache",JSON.stringify(items)); mergeInvites(items,true);
     paintInvites();
   }).catch(()=>{ INVSYNC="fail"; paintInvites(); });
 }
