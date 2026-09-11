@@ -396,7 +396,7 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 .pass-intro .infotog{margin-top:9px;padding:12px 15px;font-size:13.5px}
 .pass-intro .crest{margin-top:26px;border-bottom:0;border-top:1px solid var(--line);padding-top:18px}
 .pass-intro .note{margin-top:11px;font-size:11px}
-.pass-intro .infocard{margin-bottom:2px;max-height:42vh;overflow-y:auto}
+.pass-intro .infocard{margin-bottom:2px;max-height:42vh;overflow-y:auto;flex:none}
 .pass-intro .infocard::-webkit-scrollbar{width:0;height:0}
 
 /* ===== 블랙 & 골드 마감 ===== */
@@ -542,7 +542,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260911-110021";
+const BUILD = "20260911-111023";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -852,8 +852,13 @@ function intro(){
     const open=tg.getAttribute("aria-expanded")==="true";
     tg.setAttribute("aria-expanded",String(!open)); card.hidden=open;
     tg.firstChild.nodeValue=open?"초대 정보 열기":"초대 정보 닫기";
-    sc.classList.toggle("open",!open);
-    requestAnimationFrame(()=>sc.scrollTo({top:open?0:sc.scrollHeight,behavior:"smooth"}));
+    if(sc) sc.classList.toggle("open",!open);
+    // 화면이 다시 그려진 다음에 옮겨야 한다. 한 박자로는 모자라 두 박자 기다린다.
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      if(open){ if(sc) sc.scrollTo({top:0,behavior:"smooth"}); return; }
+      if(card.scrollIntoView) card.scrollIntoView({behavior:"smooth",block:"nearest"});
+      else if(sc) sc.scrollTo({top:sc.scrollHeight,behavior:"smooth"});
+    }));
   };
   document.getElementById("go").onclick=()=>{step=0;render();scrollTo(0,0)};
 }
