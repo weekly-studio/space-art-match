@@ -81,6 +81,10 @@ h1 em{font-style:normal;color:var(--accent-ink);background:linear-gradient(trans
 h2{font-size:22px;line-height:1.45;margin:0 0 6px;font-weight:700;text-wrap:balance;letter-spacing:-.015em}
 .qhint{color:var(--ink-3);font-size:12.5px;margin:0 0 20px}
 .opts{display:flex;flex-direction:column;gap:9px}
+.freebox{display:flex;flex-direction:column;gap:8px;margin-top:12px;background:var(--surface);border:1px solid var(--gold);border-radius:var(--radius-s);padding:13px}
+.freebox textarea{min-height:70px}
+.freebox .note{margin:0;color:var(--accent)}
+.freebox .btn{align-self:flex-end;width:auto;padding:10px 20px}
 .opt{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;background:var(--surface);color:var(--ink);border:1.5px solid transparent;border-radius:var(--radius);padding:15px 16px;font:inherit;cursor:pointer;transition:border-color .16s,background .16s,transform .1s;box-shadow:0 1px 0 var(--line)}
 .opt:hover{border-color:var(--line-strong)}
 .opt:active{transform:translateY(1px)}
@@ -241,6 +245,25 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 .recai .lab{font-size:10.5px;color:var(--accent-ink);font-weight:700;display:block;margin-bottom:2px}
 .recwhy{display:flex;flex-wrap:wrap;gap:4px;grid-column:1/-1}
 .recwhy span{font-size:11px;color:var(--ink-2);background:var(--surface);padding:2px 8px;border-radius:99px}
+.recact{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding-top:2px}
+.recact .plink{font-size:11.5px;color:var(--accent-ink);font-weight:700}
+.pinned{font-size:11px;color:var(--accent);background:var(--accent-soft);border:1px solid var(--gold);padding:2px 8px;border-radius:99px}
+dialog#pickdlg{border:0;padding:0;background:transparent;max-width:96vw;max-height:92vh}
+dialog#pickdlg::backdrop{background:rgba(0,0,0,.88)}
+.pickwrap{width:min(94vw,520px);max-height:88vh;display:flex;flex-direction:column;gap:10px;
+  background:var(--surface);border:1px solid var(--gold);border-radius:var(--radius);padding:16px}
+.pickbar{display:flex;justify-content:space-between;align-items:center}
+.pickbar b{font-size:14.5px}
+.picklist{overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:0}
+.pickitem{display:grid;grid-template-columns:64px 1fr;gap:11px;align-items:center;width:100%;text-align:left;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-s);padding:8px;font:inherit;color:var(--ink);cursor:pointer}
+.pickitem:hover{border-color:var(--gold)}
+.pickitem img{width:64px;height:64px;object-fit:cover;border-radius:6px;display:block}
+.pickitem .noimg{width:64px;height:64px;display:grid;place-items:center;font-size:10px;color:var(--ink-3);background:var(--surface)}
+.pickitem .pi{display:flex;flex-direction:column;gap:2px;min-width:0}
+.pickitem .pi b{font-size:13.5px}
+.pickitem .pi span{font-size:12.5px;color:var(--ink-2)}
+.pickitem .pi i{font-style:normal;font-size:11px;color:var(--ink-3)}
 .note.ok{color:var(--mint-ink)}
 .prog{font-size:12.5px;color:var(--accent-ink);font-weight:500}
 
@@ -456,6 +479,11 @@ input,textarea,select{background:#101012}
 <div class="wrap" id="app"></div>
 <dialog id="lightbox" onclick="this.close()"><img alt=""></dialog>
 <dialog id="qrdlg" onclick="this.close()"><div class="qrdlg"></div></dialog>
+<dialog id="pickdlg"><div class="pickwrap">
+  <div class="pickbar"><b id="picktitle">작품 고르기</b><button class="plink" id="pickclose">닫기</button></div>
+  <input id="picksearch" placeholder="작가 이름이나 작품 제목으로 찾기" autocomplete="off">
+  <div class="picklist" id="picklist"></div>
+</div></dialog>
 <div id="pdfstage"></div>
 
 <!-- qrcode-generator 1.4.4 (c) Kazuhiko Arase · MIT -->
@@ -511,7 +539,7 @@ const Q = [
   { id:"tone_room", tag:"실내 톤", q:"벽과 가구의 색은 지금 어떤 편인가요?", hint:"작품은 공간과 부딪히지 않는 선에서 골라야 합니다.",
     opts:[{k:"A",t:"화이트 벽 + 원목 가구",d:"따뜻한 중성 톤"},{k:"B",t:"그레이·블랙 모던",d:"차갑고 단단한 톤"},{k:"C",t:"베이지·아이보리 위주",d:"부드럽고 낮은 대비"},{k:"D",t:"이미 색과 패턴이 많다",d:"소품·러그·컬러 가구가 있는 편"}]},
   { id:"mood", tag:"정서", q:"그 공간에 들어섰을 때 무엇을 느끼고 싶으세요?", hint:"작품이 공간에 거는 첫마디를 정하는 문항입니다.",
-    opts:[{k:"A",t:"조용히 가라앉는 느낌",d:"숨을 고르게 하는 화면",s:{DENS:-2,TONE:-2}},{k:"B",t:"환하게 열리는 느낌",d:"공간이 넓어 보이는 화면",s:{DENS:-1,TONE:+2}},{k:"C",t:"따뜻하게 채워지는 느낌",d:"온기와 이야기가 있는 화면",s:{DENS:+2,TONE:+1}},{k:"D",t:"시선이 딱 멈추는 긴장",d:"한 점이 공간을 장악하는 화면",s:{DENS:+1,TONE:+2}}]},
+    opts:[{k:"A",t:"조용히 가라앉는 느낌",d:"숨을 고르게 하는 화면",s:{DENS:-2,TONE:-2}},{k:"B",t:"환하게 열리는 느낌",d:"공간이 넓어 보이는 화면",s:{DENS:-1,TONE:+2}},{k:"C",t:"따뜻하게 채워지는 느낌",d:"온기와 이야기가 있는 화면",s:{DENS:+2,TONE:+1}},{k:"D",t:"시선이 딱 멈추는 긴장",d:"한 점이 공간을 장악하는 화면",s:{DENS:+1,TONE:+2}},{k:"E",t:"기타 — 직접 적기",d:"원하시는 느낌을 문장으로 적어 주세요",free:true}]},
   { id:"density", tag:"화면", q:"두 그림이 나란히 있다면 어느 쪽에 오래 머무시겠어요?", hint:"화면을 채우는 방식에 대한 취향입니다.",
     opts:[{k:"A",t:"여백이 화면의 대부분인 그림",d:"작은 형상 하나, 나머지는 비어 있음",s:{DENS:-3}},{k:"B",t:"여백은 있되 중심이 분명한 그림",d:"주인공이 또렷하게 자리 잡음",s:{DENS:-1}},{k:"C",t:"화면 곳곳에 볼거리가 있는 그림",d:"눈이 여러 번 옮겨 다님",s:{DENS:+2}},{k:"D",t:"화면 끝까지 빽빽하게 찬 그림",d:"질감과 요소가 가득함",s:{DENS:+3}}]},
   { id:"form", tag:"형상", q:"그림 앞에서 '무엇을 그린 건지' 알고 싶으신가요?", hint:"구상과 추상 사이 어디에 계신지 보는 문항입니다.",
@@ -542,7 +570,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260911-111023";
+const BUILD = "20260911-112228";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -720,7 +748,8 @@ function rowFromSheet(x){
     typeKey:[T>50?1:0,F>50?1:0,D>50?1:0].join("-"),
     type:x.type, motive, motiveLabel:x.motiveLabel,
     inviteCode:x.inviteCode, invite:{name:x.name,title:x.title,by:x.by},
-    photoLinks:x.photos||[], photoCount:(x.photos||[]).length
+    photoLinks:x.photos||[], photoCount:(x.photos||[]).length,
+    picks:(x.picks||[]).map(v=>v||"")
   };
 }
 async function fetchInvites(){
@@ -790,9 +819,33 @@ const app=document.getElementById("app");
 let step=-1, ans={}, scores={TONE:0,FORM:0,DENS:0}, motive="emotion", dbp=null;
 useCap("db").then(d=>{dbp=d}).catch(()=>{});
 
+/* 자유 서술을 축 점수로 옮긴다. 어떤 낱말을 골랐는지로 결을 읽는다.
+   TONE 채도(무채→원색) · FORM 형상(구상→추상) · DENS 밀도(여백→충만) */
+const MOOD_WORDS=[
+  {re:/차분|조용|고요|잔잔|편안|아늑|쉬고|휴식|힐링|명상|가라앉|안정|정갈|담백/, s:{TONE:-1,DENS:-1}, w:"차분함"},
+  {re:/밝|환하|환한|시원|트이|넓어|개방|청량|산뜻|상쾌/,                         s:{TONE:+1,DENS:-1}, w:"밝고 트인"},
+  {re:/따뜻|포근|온기|정겨운|다정|추억|가족|그리운|향수/,                        s:{TONE:+1,DENS:+1}, w:"따뜻함"},
+  {re:/강렬|압도|시선|눈에 띄|포인트|화려|임팩트|대담|힘있|강한/,                s:{TONE:+2,DENS:+1,FORM:+1}, w:"강렬함"},
+  {re:/고급|우아|세련|모던|심플|미니멀|절제|단정|깔끔/,                         s:{FORM:+1,DENS:-1}, w:"절제된 세련"},
+  {re:/자연|숲|바다|하늘|산|들판|꽃|나무|풍경|계절/,                            s:{FORM:-1},         w:"자연"},
+  {re:/추상|색감|색채|형태|리듬|패턴/,                                         s:{FORM:+1},         w:"조형"},
+  {re:/이야기|서사|인물|사람|삶|일상/,                                         s:{FORM:-1,DENS:+1}, w:"이야기"},
+  {re:/무거|어두|묵직|깊은|진중/,                                              s:{TONE:-1,DENS:+1}, w:"묵직함"},
+  {re:/가벼|경쾌|발랄/,                                                       s:{TONE:+1,DENS:-1}, w:"경쾌함"}
+];
+function analyzeMood(text){
+  const t=String(text||"").trim(), out={TONE:0,FORM:0,DENS:0}, hit=[];
+  if(!t) return {s:out,words:hit};
+  MOOD_WORDS.forEach(m=>{ if(m.re.test(t)){ hit.push(m.w); for(const k in m.s) out[k]+=m.s[k]; } });
+  for(const k in out) out[k]=Math.max(-2,Math.min(2,out[k]));   // 한 문항이 과하게 끌지 않게
+  return {s:out,words:hit};
+}
+
+let freeText={};
 function recompute(){
   scores={TONE:0,FORM:0,DENS:0}; motive="emotion";
   Q.forEach(q=>{const i=ans[q.id]; if(i==null) return; const o=q.opts[i];
+    if(o.free){ const a=analyzeMood(freeText[q.id]); for(const k in a.s) scores[k]+=a.s[k]; return; }
     if(o.s) for(const k in o.s) scores[k]+=o.s[k]; if(o.v) motive=o.v;});
 }
 function typeKey(){return [scores.TONE>0?1:0, scores.FORM>0?1:0, scores.DENS>0?1:0].join("-")}
@@ -911,14 +964,35 @@ function gateInvite(){
   nm.onkeydown=e=>{if(e.key==="Enter") go();};
 }
 function question(){
-  const q=Q[step];
+  const q=Q[step], sel=ans[q.id], isFree=sel!=null&&q.opts[sel]&&q.opts[sel].free;
   app.innerHTML=bar()+`<section class="qwrap">
     <div class="qtag"><b>${q.tag}</b> · 문항 ${step+1}</div>
     <h2>${q.q}</h2><p class="qhint">${q.hint}</p>
-    <div class="opts">${q.opts.map((o,i)=>`<button class="opt" aria-pressed="${ans[q.id]===i}" data-i="${i}"><span class="k">${o.k}</span><span class="t"><b>${o.t}</b>${o.d?`<span>${o.d}</span>`:""}</span></button>`).join("")}</div>
+    <div class="opts">${q.opts.map((o,i)=>`<button class="opt" aria-pressed="${sel===i}" data-i="${i}"><span class="k">${o.k}</span><span class="t"><b>${o.t}</b>${o.d?`<span>${o.d}</span>`:""}</span></button>`).join("")}</div>
+    ${isFree?`<div class="freebox">
+      <textarea id="freein" rows="3" placeholder="예) 집에 들어왔을 때 마음이 탁 놓였으면 좋겠어요">${esc(freeText[q.id]||"")}</textarea>
+      <p class="note" id="freehint"></p>
+      <button class="btn small" id="freego">다음</button>
+    </div>`:""}
     <div class="navrow"><button class="back" ${step===0?"hidden":""} id="back">← 이전</button><span></span></div>
   </section>`;
-  app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{ans[q.id]=+b.dataset.i;recompute();b.setAttribute("aria-pressed","true");setTimeout(()=>{step++;render();scrollTo(0,0)},180)});
+  app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i;
+    ans[q.id]=i; recompute();
+    if(q.opts[i].free){ question(); const t=document.getElementById("freein"); if(t) t.focus(); return; }
+    b.setAttribute("aria-pressed","true");
+    setTimeout(()=>{step++;render();scrollTo(0,0)},180);
+  });
+  const ta=document.getElementById("freein");
+  if(ta){
+    const hint=document.getElementById("freehint");
+    const show=()=>{ const a=analyzeMood(ta.value);
+      hint.textContent=a.words.length?`읽은 결: ${a.words.join(" · ")}`
+        :(ta.value.trim()?"아직 결을 못 읽었습니다. 몇 자 더 적어 주세요.":""); };
+    ta.oninput=()=>{ freeText[q.id]=ta.value; recompute(); show(); };
+    show();
+    document.getElementById("freego").onclick=()=>{ freeText[q.id]=ta.value; recompute(); step++; render(); scrollTo(0,0); };
+  }
   const bk=document.getElementById("back"); if(bk) bk.onclick=()=>{step--;render();scrollTo(0,0)};
 }
 
@@ -987,7 +1061,13 @@ async function submit(){
   err.hidden=true; const btn=document.getElementById("submit"); btn.disabled=true; btn.textContent="보내는 중…";
   recompute();
   const rec={name,phone,memo,at:new Date().toISOString(),
-    answers:Object.fromEntries(Q.map(q=>[q.id, ans[q.id]==null?null:q.opts[ans[q.id]].t])),
+    answers:Object.fromEntries(Q.map(q=>{
+      const i=ans[q.id]; if(i==null) return [q.id,null];
+      const o=q.opts[i];
+      return [q.id, o.free?("기타 — "+(freeText[q.id]||"").trim()) : o.t];
+    })),
+    moodNote:(()=>{const i=ans.mood;const o=i!=null&&Q[4].opts[i];
+      return (o&&o.free)?analyzeMood(freeText.mood).words.join(" · "):"";})(),
     scores:{...scores}, axis:{tone:pct(scores.TONE,7),form:pct(scores.FORM,5),density:pct(scores.DENS,7)},
     motive, motiveLabel:MOTIVE_LABEL[motive]||motive, typeKey:typeKey(), type:TYPES[typeKey()].n, photoCount:photos.length,
     inviteCode:(INV&&INV.c)||"", invite:INV?{code:INV.c,name:INV.n,title:INV.t,by:INV.by||"",at:INV.d}:null};
@@ -1212,7 +1292,13 @@ function recommend(r){
   let scored=build(true);
   if(scored.length<5){ scored=build(false); if(shown.size) notes.push("남은 작품이 적어 이미 보낸 작품도 다시 포함했습니다."); }
   const picked=[],used=new Set();
-  const take=(pred,slot)=>{const c=scored.find(o=>!used.has(o.x)&&pred(o)); if(c){used.add(c.x);picked.push({...c,slot});return c;} return null;};
+  const pins=(r.picks||[]);
+  pins.forEach(id=>{ if(!id) return; const w=WORKS.find(x=>x.img===id); if(w) used.add(w); });
+  const take=(pred,slot)=>{
+    const id=pins[slot];                       // 담당자가 고정한 자리는 건드리지 않는다
+    if(id){ const w=WORKS.find(x=>x.img===id);
+      if(w){ const e={x:w,s:0,pinned:true,slot}; picked.push(e); return e; } }
+    const c=scored.find(o=>!used.has(o.x)&&pred(o)); if(c){used.add(c.x);picked.push({...c,slot});return c;} return null;};
   const top=take(o=>o.x.tier<=Math.min(tierMax,budget+1),0)||take(()=>true,0);
   const topTier=top?top.x.tier:1;
   take(o=>o.x.tier<topTier&&o.x.a!==top?.x.a,1)||take(o=>o.x.a!==top?.x.a,1);
@@ -1517,7 +1603,9 @@ function recHTML(p,i,r){
     <div class="recmeta mono">${p.x.w}×${p.x.h}cm · ${esc(p.x.m)} · ${esc(p.x.src)} · 가격대 ${"●".repeat(p.x.tier)}${"○".repeat(4-p.x.tier)}</div></div>
     <p class="recreason">${esc(p.reason)}</p>
     ${r.aiReasons&&r.aiReasons[p.x.t]?`<p class="recai"><span class="lab">사진 기준 코멘트</span>${esc(r.aiReasons[p.x.t])}</p>`:""}
-    <div class="recwhy">${p.why.map(w=>`<span>${esc(w)}</span>`).join("")}</div></div>`;
+    <div class="recwhy">${p.why.map(w=>`<span>${esc(w)}</span>`).join("")}</div>
+    <div class="recact">${p.pinned?`<span class="pinned">담당자 지정</span><button class="plink punpin" data-slot="${i}">지정 해제</button>`
+      :`<button class="plink ppick" data-slot="${i}">작품 바꾸기</button>`}</div></div>`;
 }
 function bodyHTML(r){
   const a=r.answers||{},R=recommend(r),ax=r.axis||{},ph=PHOTOS[r.id]||[];
@@ -1613,9 +1701,53 @@ function bindRow(r){
     adminResponses("");
   };
 }
+let PICKFOR=null;                      // {r, slot}
+function openPicker(r,slot){
+  PICKFOR={r,slot};
+  const d=document.getElementById("pickdlg");
+  document.getElementById("picktitle").textContent=`${SLOT_SHORT[slot]||(slot+1)+"번"} 자리에 넣을 작품`;
+  const inp=document.getElementById("picksearch"); inp.value="";
+  paintPickList("");
+  inp.oninput=()=>paintPickList(inp.value);
+  document.getElementById("pickclose").onclick=()=>d.close();
+  d.showModal();
+}
+function paintPickList(term){
+  const t=String(term||"").trim().toLowerCase();
+  const list=WORKS.filter(x=>!t||(x.a+" "+x.t+" "+(x.m||"")).toLowerCase().includes(t));
+  document.getElementById("picklist").innerHTML=list.map(x=>{
+    const im=WIMG[x.img];
+    return `<button class="pickitem" data-img="${esc(x.img)}">
+      ${im?`<img src="${im}" alt="">`:`<span class="noimg">이미지 없음</span>`}
+      <span class="pi"><b>${esc(x.a)}</b><span>${esc(x.t)}</span>
+      <i>${x.w}×${x.h}cm · ${esc(x.m||"")} · 가격대 ${"●".repeat(x.tier)}${"○".repeat(4-x.tier)}</i></span></button>`;
+  }).join("")||`<p class="note">찾는 작품이 없습니다.</p>`;
+  document.querySelectorAll("#picklist .pickitem").forEach(b=>b.onclick=async()=>{
+    const {r,slot}=PICKFOR||{};
+    if(!r) return;
+    r.picks=(r.picks||[]).slice(); while(r.picks.length<5) r.picks.push("");
+    r.picks[slot]=b.dataset.img;
+    document.getElementById("pickdlg").close();
+    await savePicks(r); rerender(r); say(r,"작품을 바꿨습니다.");
+  });
+}
+async function savePicks(r){
+  if(!r.fromSheet){ try{ await saveResp(r); }catch(e){} return; }
+  const t=(r.invite&&r.invite.title)||"", by=(r.invite&&r.invite.by)||"";
+  const res=await writeSheet("response.update",
+    {id:r.id,at:r.at,name:r.name,title:t,phone:r.phone,by,memo:r.memo,picks:r.picks||[]});
+  if(!res.ok) say(r,res.error,true);
+}
 function bindBody(r){
   const b=document.getElementById("b_"+r.id); if(!b) return;
   bindPhone(b.querySelector('.ef[data-k="phone"]'));
+  b.querySelectorAll(".ppick").forEach(x=>x.onclick=()=>openPicker(r,+x.dataset.slot));
+  b.querySelectorAll(".punpin").forEach(x=>x.onclick=async()=>{
+    const i=+x.dataset.slot;
+    r.picks=(r.picks||[]).slice(); while(r.picks.length<5) r.picks.push("");
+    r.picks[i]="";
+    await savePicks(r); rerender(r); say(r,"지정을 풀었습니다. 다시 추천하면 이 자리도 새로 고릅니다.");
+  });
   const sv=b.querySelector(".esave"), cn=b.querySelector(".ecancel");
   if(cn) cn.onclick=()=>{ r._edit=false; b.innerHTML=bodyHTML(r); bindBody(r); };
   if(sv) sv.onclick=async()=>{
