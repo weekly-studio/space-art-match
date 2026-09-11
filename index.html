@@ -380,17 +380,17 @@ dialog#lightbox img{max-width:96vw;max-height:96vh;display:block;border-radius:8
 .pvbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px -20px 0;padding:9px 20px;background:var(--accent-soft);border-top:1px solid var(--gold);border-bottom:1px solid var(--gold);font-size:11.5px;color:var(--accent-ink);letter-spacing:.04em}
 .pvbar .plink{color:var(--accent-ink);font-weight:700;font-size:11.5px}
 .intro.pass-intro{gap:0;justify-content:flex-start;flex:none;height:100vh;height:100lvh;overflow:hidden;
-  padding:max(72px,clamp(64px,15vh,120px)) max(0px,calc(7.5vw - 20px)) clamp(48px,13vh,110px)}
+  padding:max(72px,clamp(64px,15vh,120px)) max(0px,calc(min(3cm,16vw) - 20px)) clamp(48px,13vh,110px)}
 .introscroll{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
 .introscroll.open{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;justify-content:flex-start;
   -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,0) 0,#000 26px,#000 calc(100% - 30px),rgba(0,0,0,0) 100%);
   mask-image:linear-gradient(180deg,rgba(0,0,0,0) 0,#000 26px,#000 calc(100% - 30px),rgba(0,0,0,0) 100%)}
 .introscroll::-webkit-scrollbar{width:0;height:0}
 @media (min-aspect-ratio:50/100) and (max-aspect-ratio:62/100){
-  .intro.pass-intro{padding:max(72px,clamp(70px,16vh,130px)) max(0px,calc(15.5vw - 20px)) clamp(48px,14vh,120px)}
+  .intro.pass-intro{padding:max(72px,clamp(70px,16vh,130px)) max(0px,calc(min(3cm,22vw) - 20px)) clamp(48px,14vh,120px)}
 }
 @media (min-aspect-ratio:62/100){
-  .intro.pass-intro{padding:max(76px,15vh) max(0px,calc(21vw - 20px)) 13vh}
+  .intro.pass-intro{padding:max(76px,15vh) max(0px,calc(min(3cm,21vw) - 20px)) 13vh}
 }
 .pass-intro .btn{margin-top:18px;align-self:center;width:auto;padding:11px 26px;font-size:13.5px;letter-spacing:.04em}
 .pass-intro .infotog{margin-top:9px;padding:12px 15px;font-size:13.5px}
@@ -542,7 +542,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260911-105140";
+const BUILD = "20260911-105623";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
