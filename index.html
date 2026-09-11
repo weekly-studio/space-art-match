@@ -540,7 +540,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260911-102042";
+const BUILD = "20260911-102608";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -697,7 +697,7 @@ async function askSheet(body){
   }catch(e){ return null; }
 }
 async function writeSheet(kind,payload){
-  const j=await askSheet({kind,code:adminCode(),...payload});
+  const j=await askSheet({...payload,kind,code:adminCode()});   // code 는 접속 코드로 고정
   if(!j)            return {ok:false,error:"시트에 연결하지 못했습니다."};
   if(j.wrote!==true) return {ok:false,error:j.error
     ||"시트에 반영하지 못했습니다. Apps Script 코드를 최신으로 배포해 주세요."};
@@ -1444,8 +1444,8 @@ function bindInvites(){
     if(v._edit){
       const val=k=>el.querySelector(`.ive[data-k="${k}"]`).value.trim();
       el.querySelector(".isave").onclick=async()=>{
-        const p={code:v.code,name:val("name"),title:val("title"),phone:val("phone"),by:val("by"),memo:val("memo")};
-        const r=await writeSheet("invite.update",p);
+        const p={name:val("name"),title:val("title"),phone:val("phone"),by:val("by"),memo:val("memo")};
+        const r=await writeSheet("invite.update",{...p,inviteCode:v.code});
         if(!r.ok) return alert(r.error);
         Object.assign(v,p); v._edit=false;
         try{await DB.doc("invites/"+v.code).update(p);}catch(_){}
@@ -1457,7 +1457,7 @@ function bindInvites(){
     el.querySelector(".idel").onclick=async()=>{
       if(!confirm(v.name+" "+(v.title||"님")+" 초대를 지울까요?\n구글 시트의 발급 기록도 함께 지워지고, 그 성함으로는 들어올 수 없게 됩니다."))
         return;
-      const r=await writeSheet("invite.delete",{code:v.code});
+      const r=await writeSheet("invite.delete",{inviteCode:v.code});
       if(!r.ok) return alert(r.error);
       try{await DB.doc("invites/"+v.code).delete();}catch(_){}
       INVITES=INVITES.filter(x=>x.code!==v.code);
