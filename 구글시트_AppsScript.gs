@@ -202,44 +202,62 @@ const RESP_HEAD = ["접수시각", "성함", "호칭", "연락처", "초대코�
 const INV_HEAD = ["발급시각", "성함", "호칭", "연락처", "초대코드", "담당", "상담메모", "초대링크"];
 
 
+/**
+ * 보낸 요청과 받은 답을 짝지어 주는 표.
+ *
+ * /exec 로 보낸 POST 는 구글 내부에서 다른 주소로 한 번 넘겨진다. 이때 드물게
+ * 보낸 내용이 사라지고 엉뚱한 답(doGet 결과)이나 404 가 돌아온다. 그러면 화면은
+ * "저장됐다"고 믿는데 시트에는 아무것도 안 남는다. 그래서 답마다 "무슨 요청의
+ * 답인지(kind)"와 "몇 번 요청의 답인지(rid)"를 붙여 보낸다.
+ * 화면은 이 표가 안 맞으면 "내 요청은 도착조차 못 했다"고 알고 다시 보낸다.
+ */
+function stamp(d, out) {
+  const o = (out && typeof out === "object") ? out : { ok: false, error: "빈 응답" };
+  o.kind = (d && d.kind) || "response";
+  o.rid  = (d && d.rid)  || "";
+  return o;
+}
+
 function doPost(e) {
+  let d = null;
   try {
-    const d = JSON.parse(e.postData.contents);
-    if (d.kind === "check")  return json(checkGuest(d));
-    if (d.kind === "invite") return json(saveInvite(d));
+    d = JSON.parse(e.postData.contents);
+    if (d.kind === "check")  return json(stamp(d, checkGuest(d)));
+    if (d.kind === "invite") return json(stamp(d, saveInvite(d)));
 
     // 담당자용 조회는 접속 코드를 확인한다
-    if (d.kind === "auth")      return json({ ok: authed(d), auth: authed(d) });
-    if (d.kind === "invites")   return json(authed(d) ? listInvites()   : denied());
-    if (d.kind === "responses") return json(authed(d) ? listResponses() : denied());
+    if (d.kind === "auth")      return json(stamp(d, { ok: authed(d), auth: authed(d) }));
+    if (d.kind === "invites")   return json(stamp(d, authed(d) ? listInvites()   : denied()));
+    if (d.kind === "responses") return json(stamp(d, authed(d) ? listResponses() : denied()));
 
     // 시트를 고치고 지우는 것도 담당자만
-    if (d.kind === "invite.update")   return json(authed(d) ? updateInvite(d)   : denied());
-    if (d.kind === "invite.delete")   return json(authed(d) ? deleteInvite(d)   : denied());
-    if (d.kind === "response.update") return json(authed(d) ? updateResponse(d) : denied());
-    if (d.kind === "response.delete") return json(authed(d) ? deleteResponse(d) : denied());
+    if (d.kind === "invite.update")   return json(stamp(d, authed(d) ? updateInvite(d)   : denied()));
+    if (d.kind === "invite.delete")   return json(stamp(d, authed(d) ? deleteInvite(d)   : denied()));
+    if (d.kind === "response.update") return json(stamp(d, authed(d) ? updateResponse(d) : denied()));
+    if (d.kind === "response.delete") return json(stamp(d, authed(d) ? deleteResponse(d) : denied()));
 
     // 담당자가 관리자 화면에서 넣는 공간 사진
-    if (d.kind === "response.photo")        return json(authed(d) ? putResponsePhoto(d)  : denied());
-    if (d.kind === "response.photo.delete") return json(authed(d) ? dropResponsePhoto(d) : denied());
+    if (d.kind === "response.photo")        return json(stamp(d, authed(d) ? putResponsePhoto(d)  : denied()));
+    if (d.kind === "response.photo.delete") return json(stamp(d, authed(d) ? dropResponsePhoto(d) : denied()));
 
     // AI 사진 분석 — API 키는 여기(서버)에만 있고 화면에는 나가지 않는다
-    if (d.kind === "ai.status")  return json(authed(d) ? { ok: true, ready: aiReady(), model: AI_MODEL } : denied());
-    if (d.kind === "ai.space")   return json(authed(d) ? aiAnalyzeSpace(d)  : denied());
-    if (d.kind === "ai.comment") return json(authed(d) ? aiWorkComments(d)  : denied());
+    if (d.kind === "ai.status")  return json(stamp(d, authed(d) ? { ok: true, ready: aiReady(), model: AI_MODEL } : denied()));
+    if (d.kind === "ai.space")   return json(stamp(d, authed(d) ? aiAnalyzeSpace(d)  : denied()));
+    if (d.kind === "ai.comment") return json(stamp(d, authed(d) ? aiWorkComments(d)  : denied()));
 
-    return json(saveResponse(d));
+    return json(stamp(d, saveResponse(d)));
   } catch (err) {
-    return json({ ok: false, error: String(err) });
+    return json(stamp(d, { ok: false, error: String(err) }));
   }
 }
 
 /** 배포된 코드가 어느 버전인지 알려준다. 주소를 브라우저로 열면 보인다. */
-const VERSION = "v12-시트 사진 직접 얹기";
+const VERSION = "v13-요청·응답 짝맞추기";
 
 function doGet() {
   return json({
     ok: true,
+    kind: "get",                 // POST 답으로 이게 오면 내용이 사라진 것이다
     version: VERSION,
     features: ["응답저장", "초대기록", "명단조회", "사진표시", "AI분석"],
     aiReady: aiReady(),

@@ -367,7 +367,7 @@ dialog#pickdlg::backdrop{background:rgba(0,0,0,.88)}
 /* 오프라인 전시 초대장 */
 .expo{margin-top:28px;background:transparent;border:0;border-radius:0}
 .expo-top{padding:0 0 18px;text-align:center}
-.expo-lead{margin:10px 0 0;font-size:17px;line-height:1.5;font-weight:700;color:var(--ink)}
+.expo-lead{margin:10px 0 0;font-size:17px;line-height:1.5;font-weight:700;color:var(--ink);text-align:center;text-wrap:balance}
 .expo-poster{font-size:0;line-height:0}
 .expo-poster img{width:100%;height:auto;display:block}
 .poster-none{aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
@@ -622,7 +622,7 @@ const MOTIVE_TXT={emotion:"처음 본 순간의 감정을 중시하셔서, 설�
 
 /* ===== 새 판이 올라오면 캐시를 뚫고 스스로 다시 받는다 =====
    배포할 때마다 이 값과 version.txt 가 같이 바뀐다. */
-const BUILD = "20260916-160209";
+const BUILD = "20260916-163502";
 (async()=>{
   try{
     if(!/^https?:/.test(location.protocol)) return;
@@ -657,47 +657,64 @@ function warmSheet(){
 }
 /* 시트에 묻고 답을 받는 한 군데. 정해진 시간까지만 기다리고, 끊기면 한 번 더 묻는다.
    끝내 답이 없어도 화면이 멈추지 않도록 이유를 붙여 돌려준다. */
-const NET_WAIT=20000;
-const READ_ONLY=/^(check|auth|invites|responses)$/;     // 다시 물어도 탈이 없는 것들
+const NET_WAIT=9000;        // 한 번 시도에 이만큼까지만 기다린다
+const NET_BUDGET=27000;     // 다 합쳐 이 시간을 넘기면 포기하고 사람에게 알린다
+const NET_TRIES=3;
+
+/* 구글은 /exec 로 온 요청을 내부에서 다른 주소로 한 번 넘긴다. 이때 드물게
+   보낸 내용이 통째로 사라지고 엉뚱한 답(주소만 열었을 때 나오는 안내)이나
+   404 안내페이지가 돌아온다. 실제로 10번 중 3~4번 그랬다.
+   그대로 두면 "저장했습니다"라고 하고 시트에는 아무것도 안 남는다.
+   그래서 요청마다 표(rid)를 붙이고, 돌아온 답에 같은 표가 없으면
+   '도착조차 못 했다'로 보고 다시 보낸다. 도착을 안 했으니 다시 보내도 안전하다. */
+let RID=0;
+function newRid(){ return (++RID)+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7); }
+
 async function postSheet(body,opt){
-  const o=opt||{}, wait=o.wait||NET_WAIT;
-  // 고치고 지우는 요청은 두 번 보내면 안 된다. 읽기만 한 번 더 시도한다.
-  const tries=o.tries||(READ_ONLY.test((body&&body.kind)||"")?2:1);
+  const o=opt||{}, wait=o.wait||NET_WAIT, tries=o.tries||NET_TRIES,
+        budget=o.budget||NET_BUDGET, until=Date.now()+budget;
   if(!sheetOn()) return {ok:false,reason:"unset"};
-  const H={"Content-Type":"text/plain;charset=utf-8"}, payload=JSON.stringify(body);
+  const kind=(body&&body.kind)||"response";
+  const H={"Content-Type":"text/plain;charset=utf-8"};
   let reason="net";
   for(let i=0;i<tries;i++){
+    if(i&&Date.now()>=until){ reason="timeout"; break; }
+    const rid=newRid();
+    const payload=JSON.stringify({...body,rid});
+    const url=SHEET_URL+(SHEET_URL.indexOf("?")<0?"?":"&")+"t="+rid;   // 매번 다른 주소 = 묵은 답 재사용 방지
     let ac=null,timer=0;
-    try{ ac=new AbortController(); timer=setTimeout(()=>{try{ac.abort()}catch(_){}} ,wait); }catch(e){ ac=null; }
+    const left=Math.max(2500,Math.min(wait,until-Date.now()));
+    try{ ac=new AbortController(); timer=setTimeout(()=>{try{ac.abort()}catch(_){}},left); }catch(e){ ac=null; }
     try{
-      const res=await fetch(SHEET_URL,{method:"POST",headers:H,body:payload,cache:"no-store",
+      const res=await fetch(url,{method:"POST",headers:H,body:payload,cache:"no-store",
         signal:ac?ac.signal:undefined});
       if(timer) clearTimeout(timer);
-      const j=await res.json().catch(()=>null);
-      if(j) return {ok:true,json:j};
-      reason="bad";
+      const txt=await res.text().catch(()=>"");
+      let j=null; try{ j=JSON.parse(txt); }catch(e){ j=null; }
+      // 표가 맞으면 확실히 내 요청의 답이다.
+      // 시트 코드가 아직 옛 버전이라 표를 안 붙여 보내면, 최소한 "주소만 열었을 때
+      // 나오는 안내(version)"가 아닌지만 보고 받아들인다. 둘 다 아니면 못 닿은 것.
+      const matched = j && (j.rid===rid || (!j.rid && !j.version && j.kind!=="get"));
+      if(matched) return {ok:true,json:j};
+      reason="lost";
     }catch(e){
       if(timer) clearTimeout(timer);
       reason=(ac&&ac.signal&&ac.signal.aborted)?"timeout":"net";
     }
+    if(i<tries-1) await new Promise(r=>setTimeout(r,400+400*i));
   }
   return {ok:false,reason};
 }
+/* 고객 응답 저장처럼 "꼭 남아야 하는" 전송. 시트가 받았다고 표를 붙여 답해야만
+   성공으로 본다. 예전에는 답을 못 읽어도 성공으로 쳤는데, 그러면 고객은 다
+   끝냈다고 보는데 시트는 비어 있는 일이 생긴다. */
 async function sendToSheet(kind,data){
   if(!sheetOn()) return {ok:false,reason:"미설정"};
-  const body=JSON.stringify({kind,...data});
-  const H={"Content-Type":"text/plain;charset=utf-8"};
-  try{
-    const r=await fetch(SHEET_URL,{method:"POST",headers:H,body});
-    const j=await r.json().catch(()=>null);
-    if(j&&j.ok===false) return {ok:false,reason:j.error||"시트 기록 실패"};
-    return {ok:true};
-  }catch(e){
-    // 응답은 못 읽어도 전송은 되도록 한 번 더 시도한다
-    try{ await fetch(SHEET_URL,{method:"POST",mode:"no-cors",headers:H,body});
-         return {ok:true,unconfirmed:true}; }
-    catch(e2){ return {ok:false,reason:String(e2.message||e2)}; }
-  }
+  const r=await postSheet({kind,...data},{tries:4,budget:40000});
+  if(!r.ok) return {ok:false,reason:r.reason==="timeout"?"응답이 늦습니다":"시트에 닿지 못했습니다"};
+  const j=r.json||{};
+  if(j.ok===false) return {ok:false,reason:j.error||"시트 기록 실패"};
+  return {ok:true};
 }
 
 /* ================= 주최 · 협찬 · 오프라인 전시 =================
@@ -766,7 +783,7 @@ const SITE_URL = "https://private-art-collection.netlify.app/";
 async function checkGuest(name,tail){
   if(!sheetOn()) return {ok:false,reason:"unset"};
   const r=await postSheet({kind:"check",name,tail});
-  if(!r.ok) return {ok:false,reason:r.reason==="timeout"?"timeout":"net"};
+  if(!r.ok) return {ok:false,reason:(r.reason==="timeout"||r.reason==="lost")?"timeout":"net"};
   return r.json||{ok:false};
 }
 function mergeInvites(items,replace){
@@ -1139,7 +1156,7 @@ function gateInvite(){
           <input id="g-name" placeholder="성함" autocomplete="name" enterkeyhint="go">
           <div id="g-err" class="err" hidden></div>
           <button class="btn" id="g-go">확인</button>
-          <p class="gwait" id="g-wait" hidden>명단을 확인하고 있습니다. 처음 한 번은 10초쯤 걸릴 수 있어요.</p>
+          <p class="gwait" id="g-wait" hidden>명단을 확인하고 있습니다.</p>
         </div>
         <p class="inv-transfer">확인이 안 되시면 담당자에게 말씀해 주세요.</p>
       </div>
@@ -1148,8 +1165,9 @@ function gateInvite(){
   const nm=document.getElementById("g-name"),
         btn=document.getElementById("g-go"), err=document.getElementById("g-err"),
         wait=document.getElementById("g-wait");
-  let busy=false, slow=0;
-  const stop=()=>{ busy=false; clearTimeout(slow); wait.hidden=true; btn.disabled=false; btn.textContent="확인"; };
+  let busy=false, slow=0, tick=0;
+  const stop=()=>{ busy=false; clearTimeout(slow); clearInterval(tick);
+                   wait.hidden=true; btn.disabled=false; btn.textContent="확인"; };
   const fail=m=>{ stop(); err.hidden=false; err.textContent=m; };
   const same=(a,b)=>String(a||"").replace(/\s/g,"")===String(b||"").replace(/\s/g,"");
   const enter=(v,remember)=>{
@@ -1174,7 +1192,17 @@ function gateInvite(){
     if(SEEN&&same(SEEN.n,name))     return enter(SEEN,false);
 
     err.hidden=true; busy=true; btn.disabled=true; btn.textContent="확인 중…";
-    slow=setTimeout(()=>{ wait.hidden=false; },2500);   // 늦어지면 멈춘 게 아니라고 알린다
+    // 멈춘 게 아니라 기다리는 중이라는 걸 초 단위로 보여 준다
+    const t0=Date.now();
+    slow=setTimeout(()=>{
+      wait.hidden=false;
+      tick=setInterval(()=>{
+        const sec=Math.round((Date.now()-t0)/1000);
+        wait.textContent = sec<12
+          ? "명단을 확인하고 있습니다… "+sec+"초"
+          : "연결이 느립니다. 다시 확인하는 중이에요… "+sec+"초";
+      },400);
+    },2000);
     const r=await API.checkGuest(name,"");
     if(r&&r.ok) return enter(r,true);
     // 담당자 접속 코드일 수 있는 입력에만 한 번 더 묻는다. 한글 성함은 여기서 끝.
@@ -1182,7 +1210,7 @@ function gateInvite(){
       stop(); ADMIN=true; adminView(); scrollTo(0,0); return;
     }
     if(r&&r.reason==="timeout") return fail("확인이 늦어지고 있습니다. '확인'을 한 번 더 눌러 주세요.");
-    if(r&&r.reason==="net")     return fail("인터넷 연결을 확인하고 다시 눌러 주세요.");
+    if(r&&r.reason==="net")     return fail("인터넷 연결을 확인하고 '확인'을 다시 눌러 주세요.");
     if(r&&r.reason==="unset")   return fail("확인 준비가 아직 끝나지 않았습니다. 담당자에게 말씀해 주세요.");
     if(r&&r.nameHit)            return fail("연락처가 달라 확인하지 못했습니다. 담당자에게 말씀해 주세요.");
     fail("초대 명단에서 찾지 못했습니다. 성함을 다시 확인해 주세요.");
@@ -1302,7 +1330,7 @@ function done(){
   const artists=rosterNames().slice(0,10).join(" · ");
   app.innerHTML=pvbar()+`<section class="finish">
     <h1>${esc(honor())},<br>컨설팅 요청이 접수되었습니다.</h1>
-    <p class="lede">답변해 주신 공간 조건과 조형 취향을 담당자가 직접 검토합니다. 공간 사진은 담당자가 따로 요청드리니, 편하실 때 카카오톡으로 보내 주시면 됩니다. 보유 작품 중 ${esc(honor())}의 벽에 실제로 맞는 5점을 골라, 카카오톡을 통해 컨설팅이 진행되며, 큐레이터와 함께 작품을 관람하실 수 있습니다.</p>
+    <p class="lede">답변해 주신 공간 조건과 조형 취향을 담당자가 직접 검토합니다. 공간 사진은 담당자가 따로 요청드리니, 편하실 때 카카오톡으로 보내 주시면 됩니다. 보유 작품 중 ${esc(honor())}의 벽에 실제로 맞는 5점을 골라 두겠습니다. 컨설팅은 전시장에서 1:1로 진행되며, 큐레이터와 함께 그 작품들을 직접 보실 수 있습니다.</p>
     ${EXPO.on?`
     <div class="expo">
       <div class="expo-top">
